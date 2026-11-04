@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="author" content="Miguel Martos">
+<meta name="description" content="Simulacros tipo test de Ciencia y Tecnología del Medio Ambiente (primer parcial). Desarrollado por Miguel Martos.">
+<title>Simulacros CTMA · Miguel Martos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EAF0EC; --surface:#FFFFFF; --ink:#16302B; --muted:#56706A; --line:#C9D6CF;
+  --brand:#0E6B62; --brand-ink:#FFFFFF; --ochre:#B7791F;
+  --ok:#1E9E57; --ok-bg:#DDF5E7; --bad:#D63F3A; --bad-bg:#FBE1DF; --blank:#9AAAA4;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1B19; --surface:#152724; --ink:#E4EEEA; --muted:#9BB2AB; --line:#2A403C;
+    --brand:#3FB7A9; --brand-ink:#08201D; --ochre:#E2A64B;
+    --ok:#3BD07F; --ok-bg:#123A27; --bad:#FF6A63; --bad-bg:#43201E; --blank:#5E726C;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+    --bg:#0E1B19; --surface:#152724; --ink:#E4EEEA; --muted:#9BB2AB; --line:#2A403C;
+    --brand:#3FB7A9; --brand-ink:#08201D; --ochre:#E2A64B;
+    --ok:#3BD07F; --ok-bg:#123A27; --bad:#FF6A63; --bad-bg:#43201E; --blank:#5E726C;
+    color-scheme: dark;}
+*{box-sizing:border-box}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:grid;place-items:center;padding:18px;z-index:20}
+.modal .box{background:var(--surface);color:var(--ink);border-radius:16px;padding:20px;max-width:420px;width:100%;border:1px solid var(--line)}
+.modal .row{justify-content:flex-end;margin-top:14px}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  display:flex;flex-direction:column;min-height:100%}
+main{flex:1;width:100%;max-width:760px;margin:0 auto;padding:20px 18px 40px}
+h1,h2,h3{font-family:var(--display);line-height:1.1;margin:0 0 .4em}
+h1{font-size:clamp(2rem,6vw,3.1rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:1.6rem;font-weight:700}
+h3{font-size:1.15rem;font-weight:700;margin-top:1.4em}
+p{margin:0 0 1em;max-width:65ch}
+.muted{color:var(--muted)}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:760px;margin:0 auto;padding:14px 18px 0;width:100%}
+.brandmark{font-family:var(--display);font-weight:800;font-size:1.05rem;color:var(--brand);text-decoration:none;background:none;border:0;padding:0;cursor:pointer}
+.devline{max-width:760px;width:100%;margin:6px auto 0;padding:0 18px;font-family:var(--display);font-size:1.15rem;font-weight:500;color:var(--muted)}
+.devline strong{color:var(--ink);font-weight:700}
+.linkbtn{background:none;border:0;color:var(--muted);font:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:4px}
+footer{border-top:1px solid var(--line);padding:16px 18px;text-align:center;color:var(--muted);font-size:.92rem}
+footer strong{color:var(--ink)}
+button{font:inherit}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;border:2px solid var(--brand);
+  background:var(--brand);color:var(--brand-ink);font-weight:700;padding:13px 20px;cursor:pointer;min-height:48px}
+.btn.ghost{background:transparent;color:var(--brand)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,.opt:focus-visible,.choice:focus-visible,.linkbtn:focus-visible,.brandmark:focus-visible{outline:3px solid var(--ochre);outline-offset:2px}
+.hero{padding:22px 0 10px}
+.hero p{font-size:1.08rem}
+.modes{display:grid;gap:14px;margin:22px 0}
+.mode{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px}
+.mode h2{font-size:1.3rem;margin-bottom:.2em}
+.mode p{margin-bottom:.8em}
+.choices{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 14px}
+.choice{border:2px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:8px 14px;cursor:pointer;font-weight:700}
+.choice[aria-pressed="true"]{border-color:var(--brand);background:var(--brand);color:var(--brand-ink)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.stat-line{display:flex;flex-wrap:wrap;gap:18px;margin:6px 0 0;color:var(--muted);font-size:.95rem}
+/* tira de progreso: una celda por pregunta */
+.strip{display:flex;flex-wrap:wrap;gap:3px;margin:8px 0 18px}
+.cell{width:16px;height:16px;border-radius:4px;background:var(--line);border:0;padding:0;cursor:pointer}
+.cell:disabled{cursor:default;opacity:.55}
+.cell.now{outline:2px solid var(--ochre);outline-offset:1px}
+.cell:not(.ok):not(.bad):not(.blank).now{background:var(--ochre)}
+.cell.ok{background:var(--ok)} .cell.bad{background:var(--bad)} .cell.blank{background:var(--blank)}
+.qhead{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:.95rem;margin-bottom:6px}
+.qtext{font-family:var(--display);font-weight:700;font-size:clamp(1.25rem,3.6vw,1.6rem);line-height:1.25;margin:0 0 18px}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;background:var(--surface);color:var(--ink);
+  border:2px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer;min-height:56px;transition:background .15s,border-color .15s}
+.opt .k{flex:none;width:28px;height:28px;border-radius:8px;border:2px solid var(--line);display:grid;place-items:center;font-weight:700;font-size:.9rem;color:var(--muted)}
+.opt:hover:not(:disabled){border-color:var(--brand)}
+.opt:disabled{cursor:default}
+.opt.correct{background:var(--ok-bg);border-color:var(--ok)} .opt.correct .k{background:var(--ok);border-color:var(--ok);color:#fff}
+.opt.wrong{background:var(--bad-bg);border-color:var(--bad)} .opt.wrong .k{background:var(--bad);border-color:var(--bad);color:#fff}
+.src{display:inline-block;font-size:.85rem;font-weight:700;color:var(--ochre);margin:0 10px 8px 0}
+.tag{display:inline-block;font-weight:700;font-size:.9rem;border-radius:999px;padding:3px 12px;margin:0 0 10px}
+.tag.ok{background:var(--ok-bg);color:var(--ok)} .tag.bad{background:var(--bad-bg);color:var(--bad)} .tag.blank{background:var(--line);color:var(--ink)}
+.expl{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:14px 0 0}
+.qfoot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:18px;flex-wrap:wrap}
+.hint{color:var(--muted);font-size:.9rem}
+.grade{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 28px;margin:10px 0 6px}
+.grade .big{font-family:var(--display);font-weight:800;font-size:clamp(3.4rem,13vw,5.5rem);line-height:.9}
+.grade .pct{font-family:var(--display);font-weight:700;font-size:1.8rem;color:var(--muted)}
+.counts{display:flex;flex-wrap:wrap;gap:8px 20px;margin:10px 0 4px}
+.counts span b{font-size:1.15rem}
+.c-ok{color:var(--ok)} .c-bad{color:var(--bad)}
+.temas{margin:8px 0;padding:0;list-style:none}
+.temas li{padding:10px 0;border-bottom:1px solid var(--line)}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--ok)}
+.bar i.low{background:var(--bad)} .bar i.mid{background:var(--ochre)}
+.review{margin:10px 0;padding:0;list-style:none}
+.review li{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--bad);border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.review li.blank{border-left-color:var(--blank)}
+.review .ans{color:var(--ok);font-weight:700}
+.review .exp{color:var(--muted);font-size:.95rem;margin:.3em 0 0}
+.rules{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px 20px 14px}
+.rules ul{padding-left:1.1em} .rules li{margin:.45em 0}
+.formula{font-family:var(--display);font-weight:700;font-size:1.15rem;background:var(--bg);border-radius:10px;padding:12px 14px;display:inline-block;margin:4px 0 12px}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:16px;padding:22px;margin:20px 0}
+.hidden{display:none !important}
+@media (prefers-reduced-motion: reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <button class="brandmark" id="goHome" aria-label="Ir al inicio">Simulacros CTMA</button>
+  <button class="linkbtn" id="goRules">Cómo se evalúa</button>
+</div>
+<p class="devline">Desarrollado por <strong>Miguel Martos Muñoz</strong></p>
+<main id="app" aria-live="polite"></main>
+<footer>Desarrollado por <strong>Miguel Martos Muñoz</strong> · Ciencia y Tecnología del Medio Ambiente · Primer parcial</footer>
+<script>
+// Formato: [tema, pregunta, [opciones], índiceCorrecto, explicación, fijo(1 = no mezclar opciones)]
+// Para añadir preguntas nuevas, añádelas SIEMPRE al final (el identificador es la posición).
+const TEMAS = {
+  T1: "Tema 1: Ecología y ecosistema",
+  T2a: "Tema 2: Biosfera y metabolismo",
+  T2b: "Tema 2: Energía y producción primaria",
+  T3: "Tema 3: Redes tróficas y descomposición",
+  T4: "Tema 4: Ciclos y cambio climático",
+  T5: "Tema 5: Comunidad, sucesión y diversidad",
+  P1: "Práctica 1: Gestión ambiental y legislación",
+  P2: "Práctica 2: Contenido del EsIA",
+  P3: "Práctica 3: Caracterización de impactos",
+  P4: "Práctica 4: Causas de impacto ambiental"
+};
+const BANK = [
+// ---------- TEMA 1 ----------
+["T1","El concepto de Ecología como ciencia de los ecosistemas se debe a:",["González Bernáldez","Margalef","Lovelock","Ninguno de los anteriores"],0,"Ciencia → González Bernáldez. Biología → Margalef."],
+["T1","El concepto de Ecología como biología de los ecosistemas se debe a:",["Margalef","González Bernáldez","Lovelock","Ninguno de los anteriores"],0,"Biología de los ecosistemas → Margalef (primer catedrático de Ecología en España)."],
+["T1","El concepto de Ecología como química de los ecosistemas se debe a:",["González Bernáldez","Lovelock","Margalef","Ninguno de los anteriores"],3,"No aparece en las diapositivas: ciencia es de González Bernáldez y biología de Margalef."],
+["T1","El primer autor en definir el concepto de ecosistema fue:",["Tansley","Vernadsky","Clements","Lovelock"],0,"Tansley lo definió como un nivel de organización con interdependencia entre organismos."],
+["T1","El primer autor en usar el término «biosfera» fue:",["Vernadsky","Tansley","Margalef","Odum"],0,"Vernadsky acuñó el término biosfera; Tansley definió el ecosistema."],
+["T1","Cualquier ecosistema autosuficiente debe incluir a la vez:",["Productores y descomponedores","Productores y consumidores","Consumidores y descomponedores","Solo productores"],0,"Unos fabrican la materia orgánica y otros devuelven los nutrientes al medio."],
+["T1","Si definimos la ecología como el estudio de la distribución y abundancia de los organismos, hablamos de una ecología:",["Evolutiva","Termodinámica","Del paisaje","Climática"],0,"Es la definición clásica centrada en el organismo: ecología evolutiva."],
+["T1","Indica la afirmación INCORRECTA sobre la consideración termodinámica de los ecosistemas:",["Son sistemas físicos en equilibrio","Son sistemas abiertos","Son sistemas alejados del equilibrio","Procesan y transfieren energía"],0,"Los ecosistemas son abiertos y alejados del equilibrio."],
+["T1","La ecología termodinámica sustituye al individuo y a la especie por:",["Compartimentos o niveles tróficos","Poblaciones","Genes","Paisajes"],0,"Usa variables agregadas: compartimentos o niveles tróficos."],
+["T1","La idea de que «el todo es más que la suma de las partes» corresponde a la ecología:",["Termodinámica","Evolutiva","Reduccionista","De poblaciones"],0,"Visión holística con propiedades emergentes."],
+["T1","Un ejemplo de ecosistema heterótrofo (fotosíntesis/respiración < 1) sería:",["Una ciudad","Una pradera","Un bosque joven","Un cultivo de maíz"],0,"La ciudad consume más de lo que produce y depende de fuera."],
+["T1","En un ecosistema autótrofo la relación fotosíntesis/respiración es:",["Mayor que 1","Igual a 1","Menor que 1","Igual a 0"],0,"Autótrofo: P/R > 1. Heterótrofo: P/R < 1."],
+["T1","En el ser humano actual, la energía exosomática respecto a la endosomática es:",["Mayor","Menor","Igual","Ninguna de las anteriores, no existe energía exosomática"],0,"Usamos mucha más energía fuera del cuerpo (combustibles, electricidad) que la del metabolismo."],
+["T1","Un ecosistema agrícola se diferencia de uno natural en que:",["Hay menos especies","Los nutrientes se recirculan mucho","La producción se queda dentro del sistema","No necesita energía auxiliar"],0,"El agrosistema es abierto: la producción sale, recicla poco y tiene menos especies."],
+["T1","Biocenosis + biotopo forman:",["Un ecosistema","Una comunidad","Una población","La biosfera"],0,"La biocenosis es la comunidad y el biotopo el medio físico."],
+["T1","González Bernáldez se asocia principalmente a la ecología:",["Terrestre","Marina","Microbiana","Evolutiva"],0,"Margalef → ecología acuática; González Bernáldez → terrestre."],
+["T1","El paisaje se define como:",["La percepción plurisensorial de un sistema de relaciones ecológicas","El biotopo de una comunidad","Un ecosistema sin seres humanos","El conjunto de parcelas de cultivo"],0,"Es la proyección geográfica del ecosistema."],
+// ---------- TEMA 2a ----------
+["T2a","¿En qué capa de la atmósfera se suele encontrar el CO2?",["Troposfera","Estratosfera","Tropopausa","Ionosfera"],0,"Es la pregunta más repetida de la asignatura."],
+["T2a","¿En qué capa de la atmósfera se encuentra el O3?",["Estratosfera","Troposfera","Mesosfera","Ninguna de las anteriores, no hay O3 en la atmósfera"],0,"El ozono está en la estratosfera y hace que la temperatura suba con la altura."],
+["T2a","El principal gas de la atmósfera es:",["Nitrógeno","Oxígeno","Dióxido de carbono","Argón"],0,"N2 ≈ 78 %, O2 ≈ 21 %, argón ≈ 0,9 %."],
+["T2a","H2S + CO2 → S + CH2O. Indica el proceso:",["Fotosíntesis anaeróbica","Quimiosíntesis aeróbica","Sulfatorreducción","Respiración anaeróbica"],0,"Bacterias del azufre: usan luz y H2S como donante; no liberan O2."],
+["T2a","En la reacción H2S + CO2 → S + CH2O, el compuesto que pasa de oxidado a reducido es:",["CO2 a CH2O","H2S a S","CH2O a S","S a CO2"],0,"El CO2 gana electrones y se reduce a CH2O."],
+["T2a","En la reacción H2S + CO2 → S + CH2O, el donante de electrones en su forma OXIDADA es:",["S","H2S","CO2","CH2O"],0,"El donante entra reducido (H2S) y sale oxidado (S)."],
+["T2a","S + NO3- → SO4 2- + N2. Es:",["Quimiosíntesis anaeróbica","Fotosíntesis anaeróbica","Quimiosíntesis aeróbica","Respiración aeróbica"],0,"Sin luz ni O2. La realiza Thiobacillus denitrificans."],
+["T2a","S + NO3- → SO4 2- + N2. ¿Qué proceso está implícito en la ecuación?",["Desnitrificación","Sulfatorreducción","Sulfato-oxidación","Oxigenación del nitrógeno"],0,"El nitrato pasa a N2: desnitrificación."],
+["T2a","En la ecuación S + NO3- → SO4 2- + N2, el receptor de electrones (oxidado) es:",["NO3-","SO4 2-","S","N2"],0,"El nitrato recibe los electrones y sale como N2."],
+["T2a","El proceso CH2O + SO4 2- → CO2 + H2S:",["Es sulfatorreducción en ambientes anaeróbicos","Es sulfatorreducción en ambientes aeróbicos","Es fotosíntesis anaeróbica del sulfato","Es fotosíntesis aeróbica del sulfato"],0,"El sulfato actúa como receptor en lugar del O2 (Desulfovibrio, Desulfobacter)."],
+["T2a","CO2 + 4H2 → CH4 + 2H2O. El proceso indicado es:",["Metanogénesis","Descarboxilación","Oxigenación del hidrógeno","Hidrogenación"],0,"Metanogénesis por reducción de CO2."],
+["T2a","La formación de CH4 a partir de CO2 en anaerobiosis puede considerarse un proceso:",["Quimioautótrofo","Heterótrofo","Fotoautótrofo","Ninguna de las anteriores, no se forma CH4 a partir de CO2"],0,"El carbono viene del CO2 (auto-) y la energía es química (quimio-)."],
+["T2a","La fermentación es un proceso ligado a la materia orgánica que se da:",["En ausencia de oxígeno y se puede obtener lactato","En presencia de oxígeno y se obtiene CO2","En presencia de oxígeno y se obtiene CH4","En ausencia de oxígeno y se obtienen sulfatos"],0,"Lactobacillus → lactato; Saccharomyces → etanol. El CH4 sale de la metanogénesis."],
+["T2a","Un organismo quimiolitoautótrofo utiliza:",["Energía de reacciones químicas, carbono inorgánico y electrones de compuestos inorgánicos","Luz, carbono inorgánico y electrones inorgánicos","Energía química, carbono orgánico y electrones orgánicos","Luz y carbono orgánico"],0,"Ejemplo: las bacterias nitrificantes."],
+["T2a","Las plantas son organismos:",["Fotolitoautótrofos","Quimiorganoheterótrofos","Quimiolitoautótrofos","Fotoorganoheterótrofos"],0,"Luz, electrones del agua (inorgánico) y carbono del CO2."],
+["T2a","La nitrificación es un proceso:",["Quimiosintético aeróbico","Quimiosintético anaeróbico","Fotosintético aeróbico","De respiración anaeróbica"],0,"Necesita oxígeno: Nitrosomonas y Nitrobacter."],
+["T2a","La desnitrificación se da principalmente en sistemas:",["Eutróficos","Oligotróficos","Con alta concentración de oxígeno","Desérticos"],0,"Necesita falta de oxígeno."],
+["T2a","En la nitrificación, la bacteria Nitrobacter transforma:",["NO2- en NO3-","NH4+ en NO2-","NO3- en N2","N2 en NH4+"],0,"Nitrosomonas: NH4+ → NO2-. Nitrobacter: NO2- → NO3-."],
+["T2a","El pH máximo compatible con la vida microbiana es aproximadamente:",["12 (Plectonema)","14 (Thiobacillus)","10 (halófilos)","7 (cualquier bacteria)"],0,"pH de 0 (Thiobacillus) a 12 (Plectonema)."],
+["T2a","La temperatura máxima compatible con la vida microbiana es aproximadamente:",["120 °C (hipertermófilos)","80 °C","100 °C","150 °C"],0,"De −12 °C (psicrófilos) a 120 °C (hipertermófilos)."],
+["T2a","El potencial redox mínimo para la vida (−450 mV) lo soportan:",["Los metanógenos","Las bacterias del hierro","Los halófilos","Los psicrófilos"],0,"Las bacterias del Fe soportan el máximo (+850 mV)."],
+["T2a","¿En qué ecosistema acuático no se suele formar termoclina?",["Un humedal","Un lago profundo","Un océano","Un embalse"],0,"Es poco profundo y el agua se mezcla entera."],
+["T2a","La formación de la termoclina se debe al proceso de:",["Difusión turbulenta","Evaporación","Sedimentación","Fotosíntesis"],0,"La turbulencia mezcla la capa superficial y deja debajo un salto brusco de temperatura."],
+["T2a","Cuando la materia orgánica se oxida en un ecosistema:",["Libera energía","Absorbe energía","No varía la energía","Ninguna de las anteriores"],0,"Oxidar libera energía; reducir la absorbe."],
+["T2a","En sedimentos con sulfato, la metanogénesis:",["Queda inhibida por las bacterias sulfatorreductoras hasta que se agota el sulfato","Es siempre el proceso dominante","Necesita oxígeno","Produce sulfato"],0,"Lo comentó el profe: el metano solo se forma cuando se acaba el sulfato."],
+// ---------- TEMA 2b ----------
+["T2b","La producción primaria neta representa:",["La tasa real de nueva biomasa que queda a disposición de los heterótrofos","La tasa real de nueva biomasa que queda a disposición de los autótrofos","La transformación de energía química en luminosa","La biomasa total acumulada"],0,"Es lo que queda tras la respiración de la planta."],
+["T2b","La producción bruta la relacionas con:",["Asimilación","Crecimiento","Reproducción","Ingestión"],0,"PB = lo asimilado = PN + R."],
+["T2b","¿La producción neta puede tener un valor negativo?",["Sí, bajo limitación de recursos, y la biomasa disminuye","Nunca, siempre es positiva","No, porque siempre hay recursos","Sí, por aumento de recursos"],0,"PN = PB − R: si la respiración supera lo asimilado, la biomasa baja."],
+["T2b","La eficiencia bruta de crecimiento está relacionada con:",["La ingestión","La asimilación","La fotosíntesis","La reproducción"],0,"EBC = PN / ingestión."],
+["T2b","¿Qué cociente define mejor la eficiencia de asimilación?",["Asimilación / ingestión","Producción / ingestión","Ingestión / producción","Asimilación / producción"],0,"EA = A / I."],
+["T2b","La eficiencia de producción es:",["Pn/An × 100","An/In × 100","In/Pn × 100","Pn/In × 100"],0,"Porcentaje de lo asimilado que pasa a nueva biomasa (ENC)."],
+["T2b","La PPN de un ecosistema es 750 kg/ha·año y la respiración 120 kg/ha·año. La asimilación será:",["870 kg/ha·año","630 kg/ha·año","750 kg/ha·año","6,25 kg/ha·año"],0,"PB = PN + R = 750 + 120."],
+["T2b","La PPN de un ecosistema es 600 kg/ha·año y la respiración 200 kg/ha·año. La producción bruta será:",["800 kg/ha·año","400 kg/ha·año","3 kg/ha·año","600 kg/ha·año"],0,"PB = PN + R = 600 + 200."],
+["T2b","Un bosque tiene 45 kg/m² de biomasa y una tasa de renovación de 0,049 año-1. Su producción será:",["2.205 g/m²·año","2,205 g/m²·año","918 g/m²·año","22,05 kg/m²·año"],0,"P = B × (P/B) = 45.000 g × 0,049."],
+["T2b","Un ecosistema produce 1.500 g/m²·año con una tasa de renovación de 0,03 año-1. Su biomasa será:",["50.000 g/m²","45 g/m²","500 g/m²","4.500 g/m²"],0,"B = P ÷ (P/B) = 1.500 ÷ 0,03."],
+["T2b","Un pastizal produce 24.000 kg/ha·año. Si un carnívoro de primer orden consume 240 kg/ha·año, ¿cuántos puede mantener?",["1","10","100","0,1"],0,"Regla del 10 %: 24.000 → 2.400 → 240 → 1."],
+["T2b","Un pastizal produce 40.000 kg/ha·año. Si cada carnívoro de primer orden necesita 200 kg/ha·año, ¿cuántos puede mantener?",["2","1","20","200"],0,"40.000 → 4.000 → 400 → 400/200 = 2."],
+["T2b","Un herbívoro ingiere 20 kcal/m²·año y asimila 8. Su eficiencia de asimilación es:",["0,4","2,5","12","0,08"],0,"EA = 8 / 20."],
+["T2b","Un herbívoro ingiere 10 kcal/m²·año, asimila 6 y su producción neta es 1. Su eficiencia bruta de crecimiento es:",["0,1","0,6","0,17","1,67"],0,"EBC = PN / I = 1 / 10."],
+["T2b","Un herbívoro asimila 6 kcal/m²·año y su producción neta es 1. Su eficiencia neta de crecimiento es:",["0,17","0,1","0,6","6"],0,"ENC = PN / A = 1 / 6."],
+["T2b","Los sistemas de la agricultura preindustrial son:",["Más eficientes y menos productivos que los mecanizados","Menos eficientes y más productivos que los mecanizados","Más eficientes y más productivos que los mecanizados","Menos eficientes y menos productivos que los mecanizados"],0,"Usan poca energía externa (eficientes) pero cosechan menos."],
+["T2b","La relación PPN / energía auxiliar es mayor en:",["Un cultivo tradicional sin mecanizar","Un cultivo mecanizado","Un cultivo intensivo","Es igual en todos"],0,"Con poca energía externa, cada unidad rinde más."],
+["T2b","¿Dónde será mayor la eficiencia de consumo?",["En un pastizal","En un encinar","En la taiga","En un bosque caducifolio"],0,"Pastizales y ecosistemas pelágicos: los herbívoros aprovechan mucha PPN."],
+["T2b","¿Dónde será menor la eficiencia de consumo?",["En un bosque","En un pastizal","En un ecosistema pelágico","En una pradera"],0,"Bosques y fanerógamas litorales: los herbívoros apenas aprovechan la PPN."],
+["T2b","1 g de carbono asimilado en la fotosíntesis equivale aproximadamente a:",["10 kcal","4,18 kcal","123 kcal","30 kcal"],0,"≈ 10 kcal ≈ 42.000 J."],
+["T2b","El límite superior de la producción primaria se sitúa en:",["5-10 g C/m²·día","0,5-1 g C/m²·día","50-100 g C/m²·día","No tiene límite si hay nutrientes"],0,"Equivale a aprovechar solo unos 12 minutos de luz al día."],
+["T2b","La baja eficiencia de la fotosíntesis se debe principalmente a:",["La organización del aparato fotosintetizador","La escasez de CO2","La falta de clorofila","La absorción del infrarrojo"],0,"Unas 300 clorofilas por un solo centro de reacción."],
+["T2b","Una hoja recibe 100 unidades de energía solar y almacena 2 en azúcares; las 98 restantes se disipan como calor según:",["La segunda ley de la termodinámica","La primera ley de la termodinámica","La ley de Lambert-Beer","La hipótesis Gaia"],0,"En cada transformación aumenta la entropía."],
+["T2b","Del total de la energía solar, el visible representa aproximadamente:",["42 %","9 %","49 %","100 %"],0,"UV 9 %, visible 42 %, infrarrojo 49 %."],
+["T2b","Un estuario en zona de mareas es, según su fuente de energía, un ecosistema:",["Solar subsidiado de forma natural","Solar sin subsidios","Solar subsidiado por el ser humano","Urbano-industrial"],0,"Las mareas le aportan energía extra (10.000-40.000 kcal/m²·año)."],
+["T2b","¿Qué factores influyen directamente en la HANPP?",["Cambios de uso del suelo y biomasa cosechada consumida por humanos y ganado","Quema de bosques y erosión","Precipitación y temperatura","Solo la biomasa cosechada"],0,"HANPP = NPPh + NPPluc."],
+["T2b","La eficiencia ecológica entre un nivel trófico y el siguiente se considera, en general, de:",["Un 10 %","Un 1 %","Un 50 %","Un 90 %"],0,"Lo dijo el profe: en el examen se usa el 10 %."],
+["T2b","Los animales poiquilotermos respiran:",["Menos que los homeotermos","Más que los homeotermos","Igual que los homeotermos","Ninguna de las anteriores, no respiran"],0,"Los homeotermos gastan más energía en mantener su temperatura."],
+["T2b","¿Qué ecosistema necesita mayor precipitación y temperatura?",["Selva tropical","Taiga","Sabana","Pradera"],0,"La selva tropical es la más productiva (10-50 t/ha·año)."],
+["T2b","Una característica de los sistemas antropogénicos es que:",["Su tasa de renovación tiende a incrementarse","Su tasa de renovación tiende a disminuir","Su tasa de renovación siempre es 0","No tienen tasa de renovación"],0,"Se mantienen jóvenes y muy productivos."],
+["T2b","La biosfera, en conjunto, utiliza de la energía solar:",["Menos del 1 por mil","Alrededor del 10 %","Alrededor del 42 %","El 100 % de la RFA"],0,"Dato de Margalef."],
+// ---------- TEMA 3 ----------
+["T3","Cuando hablamos de «producción regenerada» nos referimos a:",["Amonio","Nitrato","Nitrito","Fósforo"],0,"Regenerada = amonio reciclado. Nueva = nitrato."],
+["T3","La «producción nueva» la asocias con:",["Nitrato","Amonio","Fósforo","Ninguna de las anteriores"],0,"Nitrato que llega por mezcla o afloramiento."],
+["T3","¿Se parecen el océano oligotrófico y el bosque tropical?",["Sí, por tener velocidad de reciclado alta y escasos nutrientes libres","No, no se pueden comparar sistemas acuáticos y terrestres","Sí, por tener muchos nutrientes y estabilidad","Sí, por tener termoclina permanente"],0,"Oligotrófico = pocos nutrientes; casi todo está dentro de los organismos."],
+["T3","¿Qué compuesto es más resistente a la descomposición?",["Lignina","Celulosa","Compuestos solubles","Ninguno de los anteriores"],0,"Orden: solubles → celulosa → lignina."],
+["T3","Sobreexplotación de los depredadores: efecto sobre los productores primarios:",["Negativo, disminuyen","Positivo, aumentan","No influye","Están en equilibrio"],0,"Menos depredadores → más herbívoros → menos plantas."],
+["T3","Sobreexplotación pesquera de los depredadores: efecto sobre los herbívoros:",["Indirecto positivo, aumentan","Negativo, disminuyen","No influye","Están en equilibrio"],0,"Nadie se los come: aumentan."],
+["T3","¿Cuál de estos factores influye más en la descomposición de la materia orgánica?",["Temperatura y humedad","Pluviosidad y viento","Luz y pH","Salinidad e insolación"],0,"A igual lignina, más evapotranspiración = más descomposición."],
+["T3","El cambio climático afecta a la descomposición:",["Aumentándola","Disminuyéndola","No la afecta","Deteniéndola"],0,"Más temperatura → más actividad microbiana."],
+["T3","¿Dónde es más rápida la descomposición?",["En ambientes aeróbicos","En ambientes anaeróbicos","Igual en ambos","Ninguna de las anteriores"],0,"Con oxígeno se descompone mucho más rápido."],
+["T3","La materia orgánica muerta en la comunidad de un río procede principalmente de:",["Las comunidades terrestres","La PPN del propio río","Los ramoneadores acuáticos","Los descomponedores"],0,"La producción propia del río es pequeña."],
+["T3","La eutrofización es una perturbación:",["De abajo arriba, control por recursos","De arriba abajo, control por consumidores","Neutra para el fitoplancton","Exclusiva de sistemas terrestres"],0,"Se añaden nutrientes al escalón de los productores."],
+["T3","Si se introducen peces zooplanctívoros en un lago de aguas claras, lo esperable es:",["Aguas turbias y menos vegetación sumergida","Más zooplancton y aguas más claras","Menos fitoplancton y más vegetación sumergida","Ningún efecto"],0,"Menos zooplancton → más fitoplancton → turbidez."],
+["T3","¿Qué sistema tiene mayor relación producción/biomasa (P/B)?",["Océano abierto","Pluvisilva tropical","Bosque boreal","Sabana"],0,"Océano abierto ≈ 41,5 frente a 0,049 de la pluvisilva."],
+["T3","En ecosistemas acuáticos la pirámide de biomasa puede aparecer invertida porque:",["El fitoplancton tiene poca biomasa pero una tasa de renovación muy alta","Los productores acuáticos son más grandes","La pirámide de energía también se invierte","El zooplancton no respira"],0,"En energía la pirámide nunca se invierte."],
+["T3","Las zonas de afloramiento están preadaptadas a la explotación porque:",["Reciben nitrato del fondo y funcionan con producción nueva","Funcionan con producción regenerada","Tienen pocos nutrientes y reciclado rápido","Están en etapas maduras"],0,"La regenerada (amonio) no las caracteriza."],
+["T3","El humus aumenta la capacidad de intercambio catiónico del suelo porque:",["Tiene carga negativa y retiene cationes como NH4+ y Ca2+","Tiene carga positiva","Libera fosfatos","Sube el pH"],0,"Los cationes son positivos: los retiene algo negativo."],
+["T3","Al labrar un suelo agrícola:",["Aumenta el CO2 emitido y disminuye la materia orgánica","Aumenta la materia orgánica","Disminuye el CO2 emitido","No cambia el intercambio gaseoso"],0,"Sin labrar 1.079 frente a labrado 2.686 g CO2/m²."],
+["T3","El orden en que se degradan los componentes de la materia orgánica es:",["Solubles → celulosa → lignina","Lignina → celulosa → solubles","Celulosa → lignina → solubles","Todos a la vez"],0,"Al final se forma el humus."],
+["T3","Los ácaros y colémbolos (100 µm-2 mm) pertenecen a la:",["Mesofauna","Microfauna","Macrofauna","Megafauna"],0,"Micro < 100 µm; meso 100 µm-2 mm; macro 2-20 mm."],
+["T3","Comparando producción terrestre y marina:",["La terrestre es mayor (~110 frente a ~55 Gt/año), pero la marina tiene una P/B mucho mayor","La marina es mayor y con menor P/B","Son iguales","La terrestre tiene mayor P/B"],0,"P/B terrestre 0,06 frente a marina 42."],
+// ---------- TEMA 4 ----------
+["T4","Las concentraciones de los principales gases de efecto invernadero, de mayor a menor, son:",["CO2, CH4, N2O","CO2, CH4, NO2","CH4, CO2, N2O","CH4, CO, NO"],0,"Ojo: N2O (óxido nitroso), no NO2."],
+["T4","Indica de menor a mayor la concentración de los principales gases de efecto invernadero:",["N2O, CH4, CO2","CO2, CH4, N2O","NO2, CH4, CO2","CH4, N2O, CO2"],0,"Es el orden inverso al habitual."],
+["T4","¿Qué compartimento muestra un mayor calentamiento?",["Capa superior del océano","Capa inferior del océano","Zona terrestre","Ninguna de las anteriores, es igual en todos"],0,"El 91 % del calor va al océano, sobre todo a los primeros 700 m."],
+["T4","El exceso de energía del sistema climático se acumula sobre todo en:",["Los océanos","La atmósfera","Los continentes","El hielo"],0,"Océanos 91 %, continentes 5 %, hielo 3 %, atmósfera 1 %."],
+["T4","¿Qué dos procesos son fundamentales en el papel del océano para eliminar CO2?",["Fotosíntesis y sedimentación","Respiración y fotosíntesis","Respiración y afloramiento","Evaporación y difusión"],0,"El fitoplancton fija CO2 y la materia se hunde."],
+["T4","En un sistema acuático con elevada descomposición de materia orgánica, el pH:",["Disminuirá","Será constante","Aumentará","Ninguna de las anteriores, no le afecta"],0,"Se libera CO2, que forma ácido carbónico."],
+["T4","En un lago eutrofizado, ¿qué ocurre con el fósforo y el nitrógeno?",["El fósforo precipita en el sedimento y el nitrógeno se libera como N2","Ambos se liberan a la atmósfera","El fósforo se libera como gas y el nitrógeno precipita","Ambos permanecen disueltos"],0,"El P es sedimentario; el N sale por desnitrificación."],
+["T4","En una laguna eutrofizada, los principales compuestos del hipolimnion serán:",["CO2, H2S, CH4, NH4+","CO2, H2S, CH4, O2, NO3","CO2, H2S, CH4, O2","Todos resultado del metabolismo aeróbico"],0,"En el fondo no hay oxígeno."],
+["T4","Un agricultor quiere plantar leguminosas entre sus almendros de secano. ¿Qué implicará para el suelo?",["Enriquecerá el contenido en nitrógeno","Aumentará la sequía","Atraerá ganado que dañará los almendros","Enriquecerá el contenido en calcio"],0,"Rhizobium fija el N2 del aire."],
+["T4","Los ciclos de nutrientes pueden dividirse en:",["Sedimentarios (locales) y gaseosos (globales)","Rápidos y lentos","Orgánicos e inorgánicos","Terrestres y marinos"],0,"El fósforo es sedimentario; el carbono y el nitrógeno, gaseosos."],
+["T4","El ciclo del fósforo es un ciclo:",["Sedimentario o local","Gaseoso o global","Atmosférico","Ninguna de las anteriores, no tiene ciclo"],0,"Casi no tiene fase atmosférica (0,028 Tg)."],
+["T4","Los ciclos biogeoquímicos en un sistema agrícola son:",["Rápidos y controlados por el ser humano","Lentos y naturales","Cerrados","Inexistentes"],0,"Nutrientes que entran de fuera y salen con la cosecha."],
+["T4","El compuesto responsable de la acidificación oceánica es:",["CO2","CH4","N2O","O3"],0,"CO2 + H2O → H2CO3 → baja el pH."],
+["T4","La fijación biológica de nitrógeno, respecto a la natural (rayos) y a la industrial (Haber-Bosch), es:",["Superior a ambas","Inferior a ambas","Superior a la natural e inferior a la industrial","Igual a la industrial"],0,"Lo dijo el profe: la menor es la natural, la mayor la biológica."],
+["T4","De los siguientes, el mayor reservorio de carbono es:",["Los océanos","La atmósfera","La biomasa","Los combustibles fósiles"],0,"Océanos 40.000 Gt; fósiles 10.000; atmósfera 750; biomasa 500."],
+["T4","Un agua con mucho amonio y poco nitrato indica que:",["La nitrificación está inhibida y hay poco oxígeno","La nitrificación es muy intensa","Hay mucho oxígeno","Hay desnitrificación aeróbica"],0,"La nitrificación necesita oxígeno."],
+["T4","Las plantas absorben el fósforo principalmente como:",["H2PO4- y HPO4 2-","Apatito","Fósforo gaseoso","PO4 3- unido al calcio"],0,"Dato de la diapositiva del fósforo."],
+["T4","El estado de oxidación del nitrógeno en el NO3- y en el NH4+ es:",["+5 y −3","+3 y 0","0 y −3","+5 y +3"],0,"N2 = 0."],
+["T4","¿Qué medida de adaptación de la agricultura al cambio climático recoge el tema?",["Los cultivos de verano pasarán a primavera","Los cultivos de primavera pasarán a verano","Se reforzará la frontera secano-regadío","Se eliminarán las variedades resistentes"],0,"También: variedades resistentes y agricultor más flexible."],
+["T4","La eutrofización es menos probable cuando:",["Hay movimiento del agua","El agua está estancada","Hay exceso de fósforo","Hay balsas agrícolas"],0,"Lo comentó el profe; ejemplos típicos: embalses, lagos, balsas."],
+["T4","La lluvia ácida se produce principalmente por:",["SO2 y óxidos de nitrógeno que forman H2SO4 y HNO3","El CO2 de la respiración","El metano de los arrozales","El ozono estratosférico"],0,"Reaccionan con radicales OH; es un problema transfronterizo."],
+// ---------- TEMA 5 ----------
+["T5","Una planta de tomate en un invernadero, compitiendo con otras plantas de tomate, ocupa su nicho:",["Real o efectivo","Fundamental","De Grinnell","Ninguno, en un invernadero no hay nicho"],0,"Ejemplo del profe: con competencia → nicho real."],
+["T5","El nicho fundamental es:",["El rango completo de condiciones y recursos que una especie puede usar sin competencia","El que ocupa en presencia de competidores","Su función en la comunidad","El hábitat donde vive"],0,"El real es el que ocupa en presencia de otros organismos."],
+["T5","Para Elton, el nicho de una especie es:",["Su función o «profesión» en la comunidad","El hábitat donde vive","Un hipervolumen n-dimensional","El territorio que defiende"],0,"Grinnell: hábitat. Hutchinson: hipervolumen."],
+["T5","Hutchinson definió el nicho como:",["Un hipervolumen n-dimensional","La profesión de la especie","El hábitat","Una cadena trófica"],0,"Distinguió nicho fundamental y real."],
+["T5","El principio de exclusión competitiva (Gause) establece que:",["Dos especies que compiten por el mismo recurso limitante no pueden coexistir indefinidamente","Dos especies siempre coexisten si comparten nicho","La competencia solo es intraespecífica","El depredador excluye a la presa"],0,"Experimento con Paramecium."],
+["T5","En las etapas iniciales de una sucesión predominan:",["Especies generalistas con nicho amplio","Especies especialistas con nicho estrecho","Estrategas K de gran tamaño","Redes tróficas complejas"],0,"Inicio: generalistas, r, pocas especies."],
+["T5","Las especies especialistas tienen un nicho:",["Estrecho","Amplio","Infinito","Igual al de las generalistas"],0,"Generalistas → amplio; especialistas → estrecho."],
+["T5","En las etapas maduras de la sucesión, la relación producción bruta / respiración:",["Tiende a 1","Es mucho mayor que 1","Es cero","Es siempre menor que 0,5"],0,"Lo producido se respira; la producción neta es casi cero."],
+["T5","En la sucesión del plancton, con pocos nutrientes y escasa turbulencia predominan:",["Dinoflagelados, propios de etapas finales","Diatomeas, propias de etapas iniciales","Dinoflagelados, propios de etapas iniciales","Diatomeas, propias de etapas finales"],0,"Margalef: diatomeas (r) → dinoflagelados (K)."],
+["T5","La sucesión en sistemas acuáticos supone un paso:",["De estrategas r a K, de diatomeas a dinoflagelados","De estrategas K a r, de dinoflagelados a diatomeas","De estrategas r a K, de dinoflagelados a diatomeas","De estrategas K a r, de diatomeas a dinoflagelados"],0,"Con mucha turbulencia y nutrientes dominan las diatomeas."],
+["T5","Dos comunidades con 3 especies y 15 individuos: la 1 reparte 1-1-13 y la 2 reparte 5-5-5. Según Shannon:",["La 2 es más diversa (≈ 1,58 frente a ≈ 0,70 bits)","Las dos tienen igual diversidad","La 1 es más diversa","La diversidad de la 1 sale negativa"],0,"Shannon depende de la riqueza y de la equidad."],
+["T5","Las unidades del índice de Shannon pueden ser:",["Bits (log2) y decits (log10)","Bits (log10) y decits (log2)","Kcal y julios","Individuos/m²"],0,"La diversidad nunca puede salir negativa."],
+["T5","El índice de Simpson (λ = Σ pi²):",["Es un indicador de dominancia entre 0 y 1; la diversidad sería 1 − λ","Es un indicador de equidad que puede ser negativo","Se expresa en bits","Aumenta cuando todas las especies son igual de abundantes"],0,"Ejemplo 1-1-13: λ = 0,77 → diversidad 0,23."],
+["T5","La equidad o uniformidad se calcula como:",["H / log2 S","S / log N","Σ pi²","H × S"],0,"Vale 1 cuando todas las especies son igual de abundantes."],
+["T5","La sucesión secundaria se caracteriza por:",["Producirse tras una perturbación, con reserva de semillas o propágulos","Producirse sobre sustratos nuevos","No tener etapas","Darse solo en el plancton"],0,"La primaria se da sobre sustrato nuevo."],
+["T5","Los estudios pioneros sobre la sucesión de comunidades vegetales hacia un clímax se deben a:",["Clements","Gause","Elton","Lovelock"],0,"Clements: sucesión hacia un estado de estabilidad (clímax)."],
+["T5","El amensalismo (por ejemplo, la alelopatía de pinos y eucaliptos) es una interacción:",["(−, 0)","(+, +)","(+, 0)","(−, −)"],0,"Una especie perjudica a otra sin beneficiarse."],
+["T5","Un mutualismo obligado entre dos especies se denomina:",["Simbiosis","Protocooperación","Comensalismo","Amensalismo"],0,"La protocooperación es el mutualismo no obligado."],
+["T5","Según Margalef, a lo largo de la sucesión los ciclos biogeoquímicos:",["Tienden a cerrarse","Tienden a abrirse","Desaparecen","No cambian"],0,"Los nutrientes pasan a estar dentro de los organismos."],
+["T5","En las etapas maduras de la sucesión, los nutrientes inorgánicos son:",["Intrabióticos (dentro de los organismos)","Extrabióticos","Inexistentes","Gaseosos"],0,"En las etapas iniciales son extrabióticos."],
+["T5","La comunidad A tiene 3 especies y la B 4 especies, ambas con igual número de individuos por especie. ¿Cuál es más diversa?",["B","A","Igual","No se puede saber"],0,"Con igual equidad, más especies = más diversidad."],
+["T5","La dehesa es un ejemplo de sistema:",["Creado y mantenido por el ser humano (seminatural)","Clímax sin intervención humana","Etapa pionera de una sucesión primaria","Sin árboles"],0,"Mosaico de pastizal y arbolado mantenido por el manejo humano."],
+// ---------- PRÁCTICA 1 ----------
+["P1","Selecciona los principales tipos de instrumentos para la gestión ambiental:",["Preventivos, correctivos y auxiliares","Legales y voluntarios","Guitarra y saxofón","Control de calidad, marketing y reciclaje"],0,"Ha caído 4 veces."],
+["P1","La EIA responde a un instrumento de gestión ambiental de carácter:",["Preventivo","Correctivo","Planificador","Simulador"],0,"Actúa antes de que el proyecto se autorice."],
+["P1","Las presiones que originaron la gestión ambiental empresarial fueron de tipo:",["Económico, legal y comercial","Político, religioso y cultural","Técnico y científico","Ninguna de las anteriores"],0,"Ha caído 4 veces."],
+["P1","Respecto a los instrumentos de gestión ambiental, indica la FALSA:",["Intervienen de forma independiente","Afectan a todos los agentes sociales","Actúan en todos los niveles de decisión","Se complementan generando sinergias"],0,"Se complementan; no actúan de forma independiente."],
+["P1","Selecciona la afirmación correcta sobre el documento de alcance:",["Es un pronunciamiento del órgano ambiental al promotor que delimita la amplitud y el detalle del EsIA","Lo elabora el promotor y forma parte del EsIA","Es el informe que finaliza la EIA ordinaria","Determina hasta dónde llega físicamente el impacto"],0,"Por eso no forma parte del EsIA."],
+["P1","La Declaración de Impacto Ambiental (DIA) es el informe con el que finaliza:",["La EIA ordinaria","La EIA simplificada","La Licencia Ambiental","La EAE de planes"],0,"El IIA finaliza la simplificada."],
+["P1","El Informe de Impacto Ambiental (IIA) es el que finaliza:",["La EIA simplificada","La EIA ordinaria","La Licencia Ambiental","La EAE de planes"],0,"DIA → ordinaria; IIA → simplificada."],
+["P1","¿Qué procedimiento NO está contemplado en la legislación ambiental andaluza?",["Calificación Ecológica","Autorización Ambiental Unificada","Autorización Ambiental Integrada","Licencia Ambiental"],0,"La Calificación Ecológica no existe."],
+["P1","Según la Ley 2/2026, el instrumento que sustituye a la antigua Calificación Ambiental es:",["La Licencia Ambiental","La AAUS","La Declaración Responsable","La AAI"],0,"Es municipal, como la antigua Calificación."],
+["P1","Según la Ley 2/2026, la Autorización Ambiental Unificada Simplificada (AAUS) incluye:",["El IIA de la EIA simplificada","La DIA de la EIA ordinaria","La EAE ordinaria","La antigua Calificación Ambiental"],0,"AAU ↔ DIA; AAUS ↔ IIA."],
+["P1","Según la Ley 2/2026, la Autorización Ambiental Unificada (AAU) incluye:",["La DIA de la EIA ordinaria","El IIA de la EIA simplificada","La Licencia Ambiental","La Declaración Responsable"],0,"Es de ámbito autonómico."],
+["P1","Según la Ley 2/2026, el plazo para resolver una AAU y el efecto del silencio son:",["5 meses, desestimatorio","3 meses, estimatorio","6 meses, estimatorio","2 meses, desestimatorio"],0,"Si no contestan, se entiende denegada."],
+["P1","En la Licencia Ambiental, el órgano que la tramita y el plazo de información pública son:",["El Ayuntamiento, 20 días","La Consejería, 30 días","El Ayuntamiento, 10 días","La Diputación, 20 días"],0,"Resolución en 3 meses."],
+["P1","Si la documentación de una solicitud de AAU está incompleta, el plazo de subsanación es:",["10 días","5 días","20 días","1 mes"],0,"Art. 68 de la Ley 39/2015."],
+["P1","La Directiva europea de Evaluación Ambiental Estratégica de planes y programas es la:",["2001/42/CE","85/337/CEE","97/11/CE","2011/92/UE"],0,"La 2011/92/UE es la de proyectos."],
+["P1","La ley estatal vigente de evaluación ambiental es la:",["Ley 21/2013","Ley 7/2007","Ley 16/2002","RD 1302/1986"],0,"Modificada por la Ley 9/2018."],
+["P1","El RD 445/2023:",["Modifica los anexos I, II y III de la Ley 21/2013","Deroga la Ley 21/2013","Crea la AAUS","Regula la Red Natura 2000"],0,"Cambia qué proyectos van a cada procedimiento."],
+["P1","Los proyectos del anexo I de la Ley 21/2013 se someten a:",["EIA ordinaria","EIA simplificada","Declaración Responsable","EAE"],0,"Anexo II → simplificada."],
+["P1","El principio en el que se basa la normativa ambiental europea es el de:",["Cautela y precaución","Quien contamina cobra","Libre mercado","Subsidiariedad fiscal"],0,"Ha caído 2 veces."],
+["P1","Una ley autonómica respecto a la nacional:",["No puede contradecirla","Puede contradecirla si es más reciente","La sustituye","No tiene relación"],0,"Puede desarrollarla o ser más exigente, nunca contradecirla."],
+["P1","La EIA nace en:",["EE. UU., con la NEPA (1969)","La UE, con la Directiva 85/337/CEE","España, con el RD 1302/1986","Andalucía, con la Ley 7/2007"],0,"National Environmental Policy Act."],
+["P1","Una ONG ambiental es persona interesada si, entre otros requisitos, lleva constituida al menos:",["2 años","6 meses","1 año","5 años"],0,"Además, con fines ambientales y ámbito en la zona afectada."],
+["P1","La eficacia preventiva de la gestión ambiental es mayor cuando se aplica en:",["Las políticas","Los proyectos","Los programas","Los planes"],0,"Políticas → planes → programas → proyectos, con eficacia decreciente."],
+["P1","A) La EIA es un instrumento de carácter preventivo. B) Los instrumentos de gestión ambiental intervienen de forma independiente.",["A y B son verdaderas","A es verdadera y B falsa","A es falsa y B verdadera","A y B son falsas"],1,"Los instrumentos se complementan.",1],
+["P1","A) La gestión ambiental empresarial se originó por presiones económicas, legales y comerciales. B) La normativa europea se basa en el principio de cautela y precaución.",["A y B son verdaderas","A es verdadera y B falsa","A es falsa y B verdadera","A y B son falsas"],0,"Las dos son ciertas.",1],
+["P1","La Declaración Responsable de la Ley 2/2026 es:",["Municipal, para actividades de menor incidencia ambiental","Autonómica, para grandes industrias","La que incluye la DIA","Un instrumento estatal"],0,"La AAI es para la gran industria."],
+// ---------- PRÁCTICA 2 ----------
+["P2","Selecciona el contenido que NO está incluido en un Estudio de Impacto Ambiental:",["Documento de alcance","Documento de síntesis","Examen de alternativas","Programa de vigilancia ambiental"],0,"El documento de alcance lo hace el órgano ambiental."],
+["P2","¿Qué documento NO forma parte de un Estudio de Impacto Ambiental?",["El informe de compatibilidad urbanística","El documento de síntesis","El inventario ambiental","Las medidas preventivas, correctoras y compensatorias"],0,"El de síntesis sí está dentro."],
+["P2","El Programa de Vigilancia Ambiental lo propone y ejecuta:",["El promotor","El órgano ambiental","El órgano sustantivo","El ayuntamiento"],0,"El órgano sustantivo hace el seguimiento y el ambiental vigila."],
+["P2","Programa de Vigilancia Ambiental. Indica la FALSA:",["Lo propone el promotor y lo ejecuta el órgano ambiental","Debe vigilar las medidas compensatorias","Debe vigilar la evolución de los impactos residuales","Debe proponer la frecuencia de entrega de informes"],0,"Lo propone y lo ejecuta el promotor."],
+["P2","Los espacios protegidos de la Red Natura 2000 son:",["LIC, ZEC y ZEPA","Parques Naturales, Nacionales y Regionales","Ecosistemas terrestres, acuáticos y marinos","Parques y jardines"],0,"Su alcance es comunitario (solo en la UE)."],
+["P2","Subsistemas en los que se divide el medio en un inventario ambiental:",["Físico, económico y núcleos e infraestructuras","Terrestre y acuático","Biótico, abiótico y marino","Sólido, líquido y gaseoso"],0,"Ha caído 4 veces."],
+["P2","Los elementos que componen el entorno del proyecto son:",["Medio físico, población humana y núcleos, equipamientos e infraestructuras","Solo el medio biótico","El presupuesto y los plazos","Únicamente la población"],0,"Ha caído 3 veces."],
+["P2","Respecto a las alternativas: 1) plantearlas es obligatorio; 2) pueden ser técnicas; 3) pueden ser de localización; 4) deben ser de todo el proyecto.",["Todas son verdaderas","Una es falsa","Dos son falsas","Tres son falsas"],1,"Solo es falsa la 4: pueden ser de una parte del proyecto.",1],
+["P2","Criterios de las acciones del proyecto: 1) fácilmente identificables; 2) medibles; 3) relevantes; 4) dependientes unas de otras.",["Todos son verdaderos","Uno es falso","Dos son falsos","Tres son falsos"],1,"Deben ser independientes para no contar dos veces un impacto.",1],
+["P2","A) El objeto principal del inventario ambiental es describir y caracterizar el medio. B) El inventario debe contener la información necesaria para valorar los impactos.",["A y B son verdaderas","A es verdadera y B falsa","A es falsa y B verdadera","A y B son falsas"],2,"El objeto principal es valorar, no solo describir.",1],
+["P2","Las fases metodológicas de la evaluación de impactos son:",["Identificación y valoración","Descripción y presupuesto","Consulta e información pública","Proyecto y obra"],0,"Ha caído 3 veces."],
+["P2","Documentos que se usan para identificar los impactos:",["Matrices causa-efecto y matriz de Leopold","Planos de obra","Facturas del proyecto","El documento de alcance"],0,"Las matrices cruzan acciones y factores."],
+["P2","Tipos de medidas en un EsIA:",["Protectoras, correctoras y compensatorias","Preventivas, legales y fiscales","Técnicas y económicas","Ninguna de las anteriores"],0,"Primero evitar, luego corregir y después compensar."],
+["P2","El documento de síntesis de un EsIA:",["Tiene como máximo 25 páginas y un lenguaje asequible al público","Debe redactarse con lenguaje técnico","Lo elabora el órgano ambiental","No forma parte del EsIA"],0,"Sirve para la información pública."],
+["P2","La alternativa 0 o de no actuación en un EsIA:",["Describe la situación actual y su evolución probable si no se realiza el proyecto","Es opcional si ya se eligió otra alternativa","Solo se exige en Red Natura 2000","Es siempre la elegida"],0,"Es obligatoria."],
+["P2","Un EsIA describe con detalle la balsa y las tuberías, pero no la explotación ni el abandono. La principal deficiencia es:",["Falta información para identificar los impactos del ciclo completo del proyecto","Ninguna, el EsIA solo describe las obras","Solo es un problema en Red Natura 2000","Basta con incluirlo luego en el PVA"],0,"Pregunta tipo de la Práctica 2."],
+["P2","¿Cuál es la finalidad principal del inventario ambiental dentro de un EsIA?",["Caracterizar el medio potencialmente afectado para identificar y valorar después los impactos","Describir todos los elementos naturales de la provincia","Decidir directamente las medidas correctoras","Sustituir la valoración de impactos"],0,"Pregunta tipo de la Práctica 2."],
+["P2","¿Qué debe cumplir un buen indicador de seguimiento ambiental?",["Estar relacionado con el impacto o la medida y permitir comparar su evolución en el tiempo","Ser fácil de medir aunque no tenga relación con el impacto","Medirse una sola vez antes del proyecto","Ser siempre cualitativo"],0,"Pregunta tipo de la Práctica 2."],
+["P2","¿Qué opción representa mejor la lógica de las medidas?",["Primero evitar o reducir; si persisten efectos, corregir y, cuando proceda, compensar","Primero compensar y después evitar","Todas solo en la fase de construcción","Solo para impactos críticos"],0,"Pregunta tipo de la Práctica 2."],
+["P2","En el apartado «Objeto y descripción del proyecto», lo más importante es:",["Describir las características y actuaciones capaces de generar efectos en sus distintas fases","Detallar el presupuesto de la obra","Describir la flora de la provincia","Justificar la rentabilidad del proyecto"],0,"Pregunta tipo de la Práctica 2."],
+["P2","Para describir un proyecto en un EsIA, se desagrega en:",["Fases, elementos y acciones","Presupuesto, planos y memoria","Factores, indicadores y medidas","Promotor, órgano ambiental y órgano sustantivo"],0,"Las acciones son la causa directa del impacto."],
+["P2","Los factores ambientales del inventario deben ser:",["Relevantes, excluyentes, cuantificables y fácilmente identificables","Numerosos aunque se repitan","Siempre cualitativos","Elegidos por el órgano sustantivo"],0,"Pregunta tipo de la Práctica 2."],
+// ---------- PRÁCTICA 3 ----------
+["P3","Selecciona la afirmación correcta. El impacto ambiental se define como:",["La alteración de la calidad del medio ambiente producida por una actividad humana","Cualquier variación medible de un factor ambiental","Cualquier alteración del medio, natural o humana","El efecto del medio ambiente sobre la salud humana"],0,"Claves: calidad y actividad humana."],
+["P3","Selecciona la afirmación correcta. Un impacto negativo:",["Es reversible cuando con el tiempo la calidad se iguala a la anterior sin medida correctora","Es irreversible cuando tras una medida correctora la calidad no mejora","Incrementa la calidad ambiental","Es asumible si es latente"],0,"Si tras la medida no mejora, es irrecuperable."],
+["P3","Un impacto latente es aquel que:",["Aparece tiempo después de realizar una acción","Late","Aumenta progresivamente","Desaparece tras una medida correctora"],0,"Ha caído 4 veces."],
+["P3","Un impacto acumulativo:",["Aumenta progresivamente por la acción conjunta de acciones similares","Es siempre latente","Desaparece con el tiempo","Tiene un efecto mayor que la suma de sus partes"],0,"Más que la suma = sinérgico."],
+["P3","Un impacto sinérgico es aquel en el que:",["El efecto conjunto es mayor que la suma de los efectos individuales","El efecto crece poco a poco por acciones repetidas","El efecto aparece años después","El efecto afecta a gran parte del entorno"],0,"Lo contrario es el debilitamiento."],
+["P3","En un EsIA se tienen en cuenta impactos de signo:",["Negativos y positivos","Solo negativos","Solo positivos","Ninguna de las anteriores"],0,"Ha caído 4 veces."],
+["P3","Indica los tipos de transporte de contaminantes:",["Convectivo, difusión y dispersión turbulenta","Aéreo, marítimo y terrestre","Simple y compuesto","Ninguna de las anteriores, no se transportan"],0,"Ha caído 4 veces."],
+["P3","Selecciona la afirmación INCORRECTA:",["La sobreexplotación es extraer recursos en cantidad inferior a su tasa de renovación","El mal olor es contaminación por emisión","Soltar agua de refrigeración al DPH es contaminación térmica","La turbidez por un desmonte es contaminación antrópica"],0,"Sobreexplotar es extraer por ENCIMA de la tasa de renovación."],
+["P3","Selecciona la afirmación correcta:",["Los metales pesados, pasado un umbral, son nocivos para la salud","Las grasas no se consideran contaminantes del agua","Una emisión es siempre líquida","El Dominio Público Hidráulico no incluye los acuíferos"],0,"El DPH sí incluye los acuíferos."],
+["P3","Indica dos contaminantes biológicos:",["Bacterias y protozoos parásitos","Plomo y mercurio","Ruido y luz","Nitratos y fosfatos"],0,"Ha caído 2 veces."],
+["P3","Un proyecto añade +5 dB junto a un hospital y +5 dB en un polígono industrial. ¿Es el mismo impacto?",["No necesariamente: depende del contexto y de la función de transformación","Sí, porque el aumento físico es el mismo","Sí, si la duración es la misma","No, el ruido junto a un hospital siempre es crítico"],0,"Pregunta tipo de la Práctica 3."],
+["P3","Calidad de un suelo: hoy 0,60; sin proyecto en 2035 bajaría a 0,40; con proyecto sería 0,50. El impacto es:",["Positivo","Negativo","Nulo","No puede calcularse"],0,"Con proyecto − sin proyecto = +0,10. Nunca se compara con el estado actual."],
+["P3","Cubierta vegetal: hoy 0,40; sin proyecto se recuperaría a 0,70; con proyecto llegaría a 0,60. El impacto es:",["Negativo","Positivo","Nulo","No puede calcularse"],0,"0,60 − 0,70 = −0,10: el proyecto frena la recuperación."],
+["P3","Una extracción de agua seca un humedal 12 años después de empezar. Según su MOMENTO, el impacto es:",["A largo plazo","Inmediato","Permanente","Acumulativo"],0,"Momento = cuándo aparece el efecto: más de 5 años = largo plazo."],
+["P3","Un efecto aparece 3 años después de iniciarse la acción. Según su MOMENTO es:",["A medio plazo","Inmediato","A largo plazo","Temporal"],0,"< 1 año corto; < 5 medio; > 5 largo."],
+["P3","El efecto de un impacto dura unos 2 años y luego desaparece. Según su PERSISTENCIA es:",["Temporal","Fugaz","Pertinaz","Permanente"],0,"Fugaz < 1; temporal 1-3; pertinaz 4-10; permanente > 10."],
+["P3","El efecto de un impacto dura unos 6 años y luego desaparece. Según su PERSISTENCIA es:",["Pertinaz","Temporal","Fugaz","Permanente"],0,"4-10 años = pertinaz."],
+["P3","Selecciona la correcta: 1) Un impacto es recuperable cuando el medio se recupera solo, sin medidas. 2) Un impacto es irreversible cuando tras una medida correctora no mejora. 3) Un impacto es reversible cuando tras una medida correctora la calidad mejora.",["Solo 1 es correcta","Solo 2 es correcta","Solo 3 es correcta","1, 2 y 3 son incorrectas"],3,"Sin medidas: reversible o irreversible. Con medidas: recuperable o irrecuperable.",1],
+["P3","La pérdida del uso agrológico de un suelo por cementación es un impacto:",["Constante","Periódico","Irregular","Fugaz"],0,"Pregunta tipo de la Práctica 3."],
+["P3","¿Cuál es un ejemplo de impacto irregular o aperiódico?",["Fugas de combustible por averías ocasionales","Ruido diario de una fábrica","Molestias de una cosecha anual","Ocupación permanente del suelo"],0,"Pregunta tipo de la Práctica 3."],
+["P3","¿Cuál es un ejemplo de impacto sinérgico?",["Una carretera que fragmenta el hábitat y además provoca atropellos","Un riego que saliniza poco a poco el suelo","Un ruido que dura una semana","Una obra puntual"],0,"Los dos efectos se potencian entre sí."],
+["P3","Según su extensión, un impacto que afecta a gran parte del entorno es:",["Extremo","Puntual","Parcial","Total"],0,"Total afectaría a todo el entorno."],
+["P3","El riego repetido con agua algo salina aumenta poco a poco la salinidad del suelo. Es un impacto:",["Acumulativo","Sinérgico","Puntual","Fugaz"],0,"Una misma acción repetida que crece progresivamente."],
+["P3","Los tres componentes de la representación esquemática de un impacto son:",["La alteración, el factor afectado y la acción que la provoca","Promotor, órgano ambiental y órgano sustantivo","Intensidad, extensión y momento","Signo, valor y medida"],0,"Ejemplo: disminución (alteración) del confort sonoro (factor) por el transporte (acción)."],
+["P3","En el impacto «disminución del confort sonoro por el transporte de materiales», el FACTOR afectado es:",["El confort sonoro","La disminución","El transporte de materiales","El promotor"],0,"La disminución es la alteración y el transporte la acción."],
+["P3","En un EsIA, el impacto sobre un factor se mide como:",["La diferencia entre el escenario con proyecto y el escenario sin proyecto","La diferencia entre el estado actual y el estado con proyecto","El valor legal máximo","El estado antes del proyecto"],0,"La referencia es lo que pasaría sin proyecto."],
+["P3","Para establecer que una acción causa un efecto, además de la correlación se usan como criterios principales:",["Fuerza, consistencia y temporalidad","Coste, beneficio y rentabilidad","Signo, extensión y persistencia","Opinión pública y legalidad"],0,"También gradiente, analogía, coherencia y plausibilidad."],
+["P3","En el Método Delphi, el moderador es:",["La persona del equipo técnico que recoge las respuestas y prepara los cuestionarios","El grupo de expertos","El documento que se envía","Cada ronda de cuestionarios"],0,"Panel = expertos; circulación = rondas."],
+["P3","En un EsIA, «valorar» los factores ambientales consiste en:",["Asignar un peso a cada factor para poder agregar los impactos","Calcular su precio de mercado","Describirlos en el inventario","Compararlos con el umbral legal"],0,"Ejemplo: repartir 1.000 unidades de importancia."],
+["P3","Un impacto indirecto o secundario es aquel:",["Cuyo efecto surge a partir de un impacto primario","Que afecta a gran parte del entorno","Que aparece más de 5 años después","Cuyo efecto es consecuencia directa de la acción"],0,"El impacto primario actúa como acción de segundo orden."],
+["P3","Las molestias a la fauna por una cosecha que se hace cada año en la misma época son un impacto:",["Periódico","Irregular","Continuo","Sinérgico"],0,"Se repite con un ritmo fijo."],
+["P3","A) Un impacto latente aparece tiempo después de la acción. B) Un impacto acumulativo es aquel cuyo efecto conjunto es mayor que la suma de los individuales.",["A y B son verdaderas","A es verdadera y B falsa","A es falsa y B verdadera","A y B son falsas"],1,"B describe un impacto sinérgico.",1]
+// ---------- PRÁCTICA 4 (añadida) ----------
+,["P4","¿Por qué la energía solar es un recurso de flujo?",["Su flujo no se agota por aprovecharlo","Su captación no requiere materiales","Se regenera después de cada uso","Se almacena de forma natural como un combustible"],0,"Los recursos de flujo (sol, viento, sal marina) no ven afectada su disponibilidad por usarlos."]
+,["P4","Una franja de vegetación de ribera retiene sedimentos y nutrientes de parcelas agrícolas y mejora el agua de abastecimiento aguas abajo. La interpretación más correcta es:",["La retención de nutrientes es una función ecológica que se convierte en servicio ecosistémico cuando contribuye a un beneficio para las personas","La retención es un servicio simplemente porque es un proceso natural","Es un servicio porque puede asignarse un valor económico al agua depurada","El servicio es exclusivamente el agua potable, porque solo los bienes materiales son servicios"],0,"Función ecológica + beneficio para las personas = servicio ecosistémico."]
+,["P4","Selecciona la correcta: 1) La energía solar es un recurso renovable. 2) La liberación de oxígeno por la vegetación es un servicio de aprovisionamiento. 3) La degradación de materia orgánica por organismos del suelo es un servicio de soporte.",["Solo 1 es correcta","Solo 2 es correcta","Solo 3 es correcta","1, 2 y 3 son incorrectas"],2,"La solar es un recurso de flujo; el O2 no es aprovisionamiento; la descomposición es un proceso de soporte.",1]
+,["P4","Selecciona la correcta: 1) La emisión de gases de efecto invernadero hace que se retenga más calor cerca de la superficie. 2) La liberación controlada de agua residual se considera un vertido. 3) Los residuos orgánicos agrícolas no pueden ser emitidos a la atmósfera.",["Solo 1 es correcta","Solo 2 es correcta","Solo 3 es correcta","1, 2 y 3 son correctas"],3,"Vertido = residuo líquido controlado o incontrolado; la emisión es de gases y partículas, no de residuos sólidos.",1]
+,["P4","¿Dispersar un contaminante reduce siempre su impacto?",["No necesariamente: puede alcanzar nuevos receptores","No, porque la concentración siempre aumenta","Sí, porque toda reducción de concentración evita efectos","Sí, porque elimina parte de su masa"],0,"La dispersión diluye pero no elimina la masa y puede llevarlo más lejos."]
+,["P4","Los recursos no renovables (carbón, petróleo, gas natural) se consideran así porque:",["Su reposición, por procesos geológicos, es mucho más lenta que su consumo","No pueden extraerse","Su disponibilidad no cambia aunque se usen","Se regeneran tras cada uso"],0,"Pueden agotarse."]
+,["P4","Un recurso natural renovable lo es únicamente cuando:",["Se respeta su índice de recuperación","Es de origen mineral","Procede del sol","Se extrae de forma industrial"],0,"Si se explota por encima de su regeneración, puede dejar de recuperarse."]
+,["P4","Son ejemplos de recursos de flujo:",["La sal marina, la energía solar y el viento","El petróleo y el carbón","Los acuíferos fósiles","Los minerales metálicos"],0,"Su disponibilidad no depende de que se usen o no."]
+,["P4","En un bosque, la madera, la retención del suelo por las raíces y la menor erosión que protege los cultivos son, respectivamente:",["Un bien, una función ecológica y un servicio ecosistémico","Un servicio, un bien y una función","Una función, un servicio y un bien","Tres servicios de aprovisionamiento"],0,"El servicio aparece cuando la función beneficia a las personas."]
+,["P4","Los cuatro tipos de servicios ecosistémicos son:",["Aprovisionamiento, regulación, culturales y soporte","Agua, suelo, aire y biodiversidad","Directos, indirectos, sinérgicos y acumulativos","Públicos, privados, mixtos y culturales"],0,"Clasificación según el beneficio que ofrecen."]
+,["P4","La polinización, la regulación del clima o el control de la erosión son servicios de:",["Regulación","Aprovisionamiento","Culturales","Soporte"],0,"Derivan de funciones clave que reducen impactos locales y globales."]
+,["P4","La madera, el agua o los alimentos que ofrece un ecosistema son servicios de:",["Aprovisionamiento","Regulación","Soporte","Culturales"],0,"Bienes o materias primas."]
+,["P4","Los servicios relacionados con el ocio, el tiempo libre o la cultura son servicios:",["Culturales","De soporte","De regulación","De aprovisionamiento"],0,"Incluyen la belleza paisajística y la recreación."]
+,["P4","La biodiversidad y los procesos naturales que garantizan buena parte del resto de servicios son servicios de:",["Soporte","Aprovisionamiento","Regulación","Culturales"],0,"Sostienen a los demás servicios."]
+,["P4","La integridad de un ecosistema hace referencia a:",["La conectividad espacial, la ausencia de fragmentación artificial y el funcionamiento natural de sus procesos","Solo el número de especies que contiene","Su valor económico","La superficie total que ocupa"],0,"Las áreas de alta integridad son resilientes."]
+,["P4","Respecto a la integridad ecológica, indica la correcta:",["Conservar especies aisladas no garantiza un ecosistema íntegro: también deben mantenerse estructura, conectividad y procesos","Basta con conservar las especies amenazadas","La integridad solo depende de la composición de especies","La conectividad no influye en la integridad"],0,"Integridad = composición + estructura + conectividad + procesos."]
+,["P4","¿Cuál de estos procesos NO supone un detrimento de la integridad de un ecosistema?",["Aumento de la conectividad entre hábitats","Disrupción de las redes tróficas","Desplazamiento de las áreas de distribución","Aumento de patógenos, parásitos y enfermedades"],0,"También restan integridad los efectos umbral, los riesgos de extinción y la escasez de recursos clave."]
+,["P4","Es una práctica agraria de sobreexplotación:",["Extraer agua subterránea por encima de la recarga media anual","Respetar los caudales ecológicos mínimos","Aplicar rotación de pastos","Seguir un plan de aprovechamiento sostenible de leñas"],0,"Sobreexplotar = extraer por encima de la tasa de renovación."]
+,["P4","La emisión se define como:",["La contaminación del aire por expulsión a la atmósfera de gases y partículas extrañas a ella","Todo residuo líquido producido de forma controlada o incontrolada","Las sustancias sólidas o semisólidas que hay que gestionar","Cualquier cambio en el uso del suelo"],0,"Vertido = líquido; residuo = sólido o semisólido."]
+,["P4","Un vertido es:",["Todo residuo líquido producido de forma controlada o incontrolada, o por derrames y fugas","Solo el líquido liberado de forma accidental","La expulsión de gases a la atmósfera","Un residuo sólido urbano"],0,"Incluye la liberación controlada de aguas residuales."]
+,["P4","¿Qué NO forma parte del Dominio Público Hidráulico?",["El mar territorial","Los acuíferos subterráneos","Los cauces de corrientes naturales, continuas o discontinuas","Las aguas desaladas una vez incorporadas a los cauces o acuíferos"],0,"El DPH incluye aguas continentales superficiales y subterráneas, cauces, lechos y acuíferos."]
+,["P4","La contaminación por los fertilizantes aplicados en toda una comarca agrícola es un ejemplo de contaminación:",["Difusa","Puntual","Natural","Térmica"],0,"Difusa: sin foco concreto, fuentes distribuidas en el espacio."]
+,["P4","El vertido de una depuradora a través de una tubería concreta es un ejemplo de contaminación:",["Puntual","Difusa","Natural","Visual"],0,"Puntual: un foco emisor identificable que afecta a una zona concreta."]
+,["P4","Los plaguicidas y los fertilizantes ricos en nitrógeno y fósforo son contaminantes de origen:",["Agrícola","Natural","Urbano","Industrial"],0,"La contaminación antrópica puede ser urbana, agrícola o industrial."]
+,["P4","Las grasas, las proteínas y los pesticidas son contaminantes del agua de tipo:",["Químico orgánico","Químico inorgánico","Físico","Biológico"],0,"Inorgánicos: cloruros, metales pesados, N, P, S. Biológicos: bacterias, virus, parásitos."]
+,["P4","Un vertido que llega al río a través del alcantarillado es una contaminación:",["Indirecta","Directa","Natural","Difusa"],0,"Directa: se vierte sobre el propio cauce."]
+,["P4","Según la FAO, la contaminación del suelo es:",["Una forma de degradación química que provoca la pérdida parcial o total de su productividad","Cualquier cambio en su color","La compactación por maquinaria","La erosión por el viento"],0,"Un suelo contaminado supone un riesgo para la salud o el medio."]
+,["P4","Respecto a los metales pesados en el suelo:",["A pequeñas dosis son micronutrientes, pero pasado un umbral son nocivos y provocan una contaminación casi irreversible","Nunca son necesarios para los seres vivos","Se eliminan rápidamente con la lluvia","Solo proceden de la actividad volcánica"],0,"Solo se movilizan por intercambio iónico."]
+,["P4","El uso de agua de riego de mala calidad contamina el suelo principalmente por:",["Salinización y sodificación","Acidificación por SO2","Contaminación lumínica","Compactación"],0,"Es uno de los agentes contaminantes del suelo."]
+,["P4","Los efectos más graves de un suelo contaminado suelen manifestarse:",["A largo plazo","De forma inmediata","Solo en el agua de lluvia","Nunca afectan a la salud"],0,"Pueden ser directos (vapores, polvo) o indirectos (agua y alimentos)."]
+,["P4","Sobre los materiales, el SO2 provoca:",["La demolición de la caliza y la corrosión de los metales","Manchas blancas en la vegetación","La acumulación en los huesos","La pérdida de color en la ropa"],0,"Las manchas blancas son del O3 y los PAN; el HF se acumula en huesos y hierba; el NO2 decolora tejidos."]
+,["P4","¿Qué contaminante atmosférico interfiere en el transporte de oxígeno en la sangre?",["El monóxido de carbono (CO)","El ozono (O3)","El dióxido de azufre (SO2)","Las partículas"],0,"Las dioxinas y furanos son cancerígenos y mutagénicos."]
+,["P4","En la autodepuración de un río intervienen procesos:",["Físicos (sedimentación, flotación y transporte), químicos y biológicos","Solo biológicos","Solo físicos","Ninguna de las anteriores, los ríos no se autodepuran"],0,"Los elementos pesados se depositan más en las zonas remansadas que en los rápidos."]
+,["P4","Tras un vertido orgánico, el oxígeno disuelto del río:",["Desciende y puede recuperarse aguas abajo; si el consumo supera la reposición aparece hipoxia","Aumenta siempre","No varía","Desaparece para siempre"],0,"La recuperación depende de la carga del vertido."]
+,["P4","La capacidad de autodepuración o poder de amortiguación de un suelo se basa en:",["Neutralizar ácidos y bases, degradar la materia orgánica e inmovilizar iones en su complejo de cambio","Expulsar los contaminantes a la atmósfera","Aumentar la erosión","Impedir la entrada de agua"],0,"El suelo es un sistema abierto y autodepurador."]
+,["P4","Ocupar 10 ha en una parcela intensiva o 10 ha en un corredor ecológico:",["No tiene la misma magnitud: importan la localización, el estado previo y la función del espacio","Tiene siempre el mismo impacto porque la superficie es igual","Es más grave en la parcela intensiva","No supone impacto en ningún caso"],0,"En el corredor puede interrumpir conexiones entre hábitats."]
+,["P4","Al intensificar un cultivo y simplificar el paisaje, lo habitual es que:",["Aumente el aprovisionamiento y disminuyan los servicios de regulación y soporte","Aumenten todos los servicios","Disminuya el aprovisionamiento","No cambie ningún servicio"],0,"Setos, cubiertas y mosaicos ayudan a conservar funciones."]
+,["P4","La fragmentación de hábitats provoca principalmente:",["Aislamiento y efecto barrera, reduciendo movimientos, dispersión y reproducción","Más conectividad entre poblaciones","Aumento de la integridad ecológica","Mayor intercambio genético"],0,"Fragmentar también interrumpe flujos y procesos."]
+,["P4","Una consecuencia ecológica del abandono de socioecosistemas agrícolas tradicionales es:",["La matorralización, con más erosión e incendios forestales","La recuperación inmediata del bosque clímax","El aumento de la población rural","La conservación de bancales y acequias"],0,"Además hay pérdidas culturales (bancales, riegos) y económicas (despoblación, daños por jabalí)."]
+,["P4","Tras abandonar un bancal aumenta la vegetación, pero se deterioran muros y acequias. Esto muestra que:",["El abandono no supone una recuperación automática: puede mejorar la cobertura y a la vez perderse integridad cultural","El abandono siempre es positivo","El abandono siempre es negativo","Los bancales no forman parte del paisaje"],0,"El paisaje agrario es un socioecosistema con historia."]
+,["P4","Según la Práctica 4, las tres grandes vías por las que un proyecto causa impacto son:",["Consumo de recursos, emisión de contaminantes y transformación de espacios","Ruido, olor y polvo","Construcción, explotación y abandono","Preventivas, correctoras y compensatorias"],0,"Un mismo proyecto puede activar las tres."]
+,["P4","Si una población se explota durante años por encima de su capacidad de regeneración:",["Reducir la extracción al final puede no bastar para recuperar el estado inicial, porque pueden superarse umbrales","Basta siempre con dejar de explotarla","Se recupera de inmediato","Deja de ser un recurso renovable por definición"],0,"La resiliencia tiene límites."]
+,["P4","Integrar producción y conservación en el mismo espacio, mediante un mosaico agrario con setos y linderos, corresponde al enfoque:",["Land sharing","Land sparing","Agricultura intensiva","Abandono"],0,"Land sparing: intensificar en unas zonas y reservar otras para la naturaleza."]
+// ---------- GRÁFICAS y preguntas antiguas (añadidas) ----------
+,["T2a","📈 Gráfica: En el perfil vertical de temperatura de la atmósfera, entre unos 15 y 50 km la temperatura aumenta con la altura porque:",["El ozono absorbe la radiación ultravioleta y libera calor", "Hay más vapor de agua", "Se acumula el CO2", "La superficie terrestre irradia más calor"],0,"En la troposfera la temperatura baja con la altura; en la estratosfera sube por el ozono."]
+,["T2a","📈 Gráfica: En la curva de extinción de la luz en el agua (Lambert-Beer), la intensidad con la profundidad:",["Decrece exponencialmente y la zona fótica termina donde llega el 1 % de la luz superficial", "Decrece de forma lineal", "Se mantiene constante hasta el fondo", "Aumenta en las capas profundas"],0,"Iz = I0·e^-kz; además cambia la calidad espectral."]
+,["T2a","📈 Gráfica: En la gráfica del espectro solar, la curva medida a nivel del mar muestra «valles» profundos en el infrarrojo. Se deben a:",["La absorción por el vapor de agua (y el CO2) de la atmósfera", "La absorción por el ozono", "La reflexión de las nubes en el visible", "Que el Sol no emite infrarrojo"],0,"En la parte superior de la atmósfera la curva es continua."]
+,["T2a","📈 Gráfica: En la gráfica que compara perfiles de temperatura en una columna de agua, el perfil con una capa superficial homogénea y un descenso gradual corresponde a:",["La difusión turbulenta", "La difusión molecular exclusivamente", "La ausencia de radiación", "Un lago helado"],0,"Con solo difusión molecular el calor apenas penetra y el perfil es muy brusco."]
+,["T2a","📈 Gráfica: En la gráfica de estratificación térmica de un lago, la situación con hielo en superficie y el agua del fondo a 4 °C representa:",["Una termoclina inversa invernal", "Una termoclina estival", "Un lago sin estratificar", "Una capa de mezcla de verano"],0,"El agua alcanza su máxima densidad a 4 °C y se queda en el fondo."]
+,["T2a","📈 Gráfica: En la gráfica de termoclina estacional y permanente, la curva de latitudes polares es casi vertical. Eso indica que:",["La columna de agua es casi isoterma y no hay termoclina marcada", "Hay una termoclina permanente muy intensa", "La superficie es mucho más cálida que el fondo", "Solo hay termoclina en verano"],0,"La termoclina permanente aparece en latitudes subtropicales y medias."]
+,["T2a","📈 Gráfica: En la gráfica de la biosfera primitiva, la atmósfera pasa a ser oxidante hace aproximadamente:",["2.500 millones de años", "4.600 millones de años", "600 millones de años", "3.900 millones de años"],0,"Después aparecen los protistas (1.800) y los metazoos (600)."]
+,["T2b","📈 Gráfica: En la gráfica de producción primaria frente a precipitación, la producción:",["Aumenta con la precipitación y tiende a estabilizarse (curva que se satura)", "Disminuye al aumentar la lluvia", "No depende de la precipitación", "Aumenta de forma lineal sin límite"],0,"A partir de unos 3.000 mm la curva se aplana."]
+,["T2b","📈 Gráfica: En la gráfica de producción primaria frente a temperatura media anual, la relación tiene forma:",["Sigmoide: baja con frío, sube con temperaturas medias y se estabiliza con calor", "Lineal decreciente", "Constante", "En campana con máximo a 0 °C"],0,"La producción aumenta con la temperatura hasta saturarse."]
+,["T2b","📈 Gráfica: En el diagrama de biomas según temperatura y precipitación, el situado con temperatura y precipitación más altas es:",["La selva tropical", "La tundra", "El desierto", "La taiga"],0,"El desierto tiene temperatura alta pero muy poca lluvia; la tundra, ambas bajas."]
+,["T2b","📈 Gráfica: En el diagrama de biomas, el ecosistema con temperatura alta pero muy poca precipitación es:",["El desierto", "La selva tropical", "La taiga", "El bosque caducifolio"],0,"Su producción es de 0-2,5 t/ha·año."]
+,["T2b","📈 Gráfica: En el mapa mundial de producción primaria, los valores máximos (más de 2.000 g/m²·año) aparecen en:",["La Amazonía, la cuenca del Congo y el sudeste asiático", "El Sáhara y Arabia", "Groenlandia y la Antártida", "Asia central"],0,"Coinciden con las zonas cálidas y húmedas."]
+,["T2b","📈 Gráfica: En una gráfica de biomasa frente al tiempo, un tramo horizontal (B/t = 0) indica que:",["La producción iguala a las pérdidas: estado estacionario", "La producción es nula", "El sistema está creciendo", "El sistema está colapsando"],0,"B/t > 0 crece; B/t < 0 decrece."]
+,["T3","📈 Gráfica: En la gráfica de tasa de ingestión frente a abundancia de alimento, la ingestión:",["Aumenta con la abundancia de alimento hasta saturarse", "Disminuye al haber más alimento", "Es constante", "Aumenta sin límite"],0,"La ingestión depende de la concentración de alimento."]
+,["T3","📈 Gráfica: En la gráfica de gasto metabólico frente a masa corporal (escalas logarítmicas) aparece una recta. Indica que:",["La respiración sigue una función potencial (alométrica) de la masa corporal", "La respiración no depende del tamaño", "Los unicelulares gastan más que los homeotermos", "La relación es exponencial negativa"],0,"Los homeotermos quedan por encima de los unicelulares."]
+,["T3","📈 Gráfica: En la gráfica de tasa específica de crecimiento frente a temperatura, al aumentar el alimento disponible:",["La curva sube y su máximo se desplaza a temperaturas más altas", "La curva baja", "El máximo se desplaza a temperaturas más bajas", "No cambia nada"],0,"Con más alimento se toleran mejor temperaturas altas."]
+,["T3","📈 Gráfica: En la gráfica del % de masa inicial que permanece durante la descomposición, la curva casi horizontal corresponde a:",["La lignina", "Los compuestos solubles", "La celulosa", "Los azúcares"],0,"Los solubles caen rápido, la celulosa a ritmo intermedio y la lignina muy lento."]
+,["T3","📈 Gráfica: En la gráfica de tasa de descomposición frente a concentración de lignina, a igual contenido en lignina la tasa es mayor con:",["900 mm de evapotranspiración que con 300 mm", "300 mm de evapotranspiración", "Ninguna diferencia", "Menos humedad"],0,"La evapotranspiración depende de la temperatura y la humedad."]
+,["T3","📈 Gráfica: En la gráfica de descomposición de hojarasca en condiciones aeróbicas y anaeróbicas, a los 800 días:",["En condiciones aeróbicas queda mucha menos masa que en anaeróbicas", "Queda la misma masa en ambas", "En anaeróbicas se descompone todo", "No hay descomposición en ninguna"],0,"Con oxígeno la descomposición es mucho más rápida."]
+,["T3","📈 Gráfica: En la gráfica del % de nitrógeno remanente durante la descomposición, la curva sube por encima del 100 %. Esto ocurre porque:",["La inmovilización supera a la mineralización: los microorganismos retienen nitrógeno", "Se lixivia el nitrógeno", "La mineralización supera a la inmovilización", "Se fija nitrógeno atmosférico por los rayos"],0,"Después la mineralización supera a la inmovilización y la curva baja."]
+,["T3","📈 Gráfica: En la gráfica diaria de un bosque caducifolio, la evolución del CO2 liberado:",["Sigue a la temperatura: cuando sube la temperatura aumenta la descomposición", "Es contraria a la temperatura", "Es constante todo el día", "Solo ocurre de noche"],0,"La tasa de descomposición se mide por el CO2 liberado."]
+,["T3","📈 Gráfica: En el gráfico de barras del flujo de CO2 tras el arado, la parcela labrada emite:",["Unas 2,5 veces más CO2 que la parcela sin labrar", "Menos CO2 que la sin labrar", "La misma cantidad", "Nada de CO2"],0,"2.686 frente a 1.079 g CO2/m² en 87 días."]
+,["T3","📈 Gráfica: En los perfiles de oxígeno de un lago oligotrófico y uno eutrófico, el eutrófico se caracteriza por:",["Mucho oxígeno en superficie por el fitoplancton y ausencia de oxígeno en el fondo", "Oxígeno alto y homogéneo en toda la columna", "Ausencia de oxígeno en superficie", "Más peces en el fondo"],0,"En el fondo aparecen SH2 y CH4."]
+,["T3","📈 Gráfica: En los esquemas de lago de aguas claras y aguas turbias, las flechas discontinuas representan:",["Efectos indirectos", "Flujos de energía", "Efectos directos", "Nada"],0,"Por ejemplo, los peces zooplanctívoros favorecen indirectamente al fitoplancton."]
+,["T3","📈 Gráfica: En una pirámide de biomasa de un ecosistema acuático, el nivel de los productores aparece más estrecho que el de los consumidores porque:",["El fitoplancton tiene poca biomasa pero se renueva muy rápido", "Los productores acuáticos son muy grandes", "La pirámide de energía también está invertida", "El zooplancton no respira"],0,"La pirámide de energía nunca se invierte."]
+,["T3","📈 Gráfica: En la gráfica de producción comparada de la biosfera, el sistema con mayor relación producción/biomasa es:",["El océano abierto", "La pluvisilva tropical", "El bosque boreal", "Los desiertos"],0,"Océano abierto: P/B ≈ 41,5; pluvisilva: 0,049."]
+,["T3","📈 Gráfica: En los esquemas de flujos energéticos, el sistema donde casi toda la materia orgánica muerta llega desde fuera es:",["La comunidad de un río", "El bosque", "El prado", "La comunidad planctónica"],0,"La MOM del río procede de las comunidades terrestres."]
+,["T4","📈 Gráfica: En la gráfica de temperatura media global desde el año 1, el calentamiento reciente:",["No tiene precedentes en más de 2.000 años", "Es igual al de la Edad Media", "Es menor que el de hace 500 años", "No se aprecia"],0,"En 2011-2020 fue unos 1,09 °C superior a 1850-1900."]
+,["T4","📈 Gráfica: En la gráfica que compara la temperatura observada con simulaciones, la simulación con solo forzamiento natural (sol y volcanes):",["No reproduce el calentamiento reciente: la causa principal es la influencia humana", "Reproduce perfectamente el calentamiento", "Muestra más calentamiento que lo observado", "Coincide con la simulación humana"],0,"Solo la simulación con forzamiento humano y natural se ajusta a lo observado."]
+,["T4","📈 Gráfica: En la gráfica de proyecciones del pH del océano, el pH:",["Disminuye en todos los escenarios, más en los de mayores emisiones", "Aumenta en todos los escenarios", "No cambia", "Sube en el escenario de más emisiones"],0,"La acidificación se debe al CO2."]
+,["T4","📈 Gráfica: En los mapas de cambio regional del clima, el calentamiento es más acusado en:",["El Ártico, sobre tierra y en el hemisferio norte", "Los océanos tropicales", "La Antártida y el hemisferio sur", "Es igual en todo el planeta"],0,"El cambio climático no se distribuye de manera uniforme."]
+,["T4","📈 Gráfica: En los mapas de precipitación proyectada, la precipitación disminuirá en:",["Los subtrópicos", "Las latitudes altas", "Los trópicos", "Las regiones monzónicas"],0,"Aumentará en latitudes altas, trópicos y monzones."]
+,["T4","📈 Gráfica: En el diagrama del ciclo del nitrógeno con el estado de oxidación en el eje vertical, la nitrificación:",["Sube del amonio (−3) al nitrato (+5)", "Baja del nitrato (+5) al N2 (0)", "Pasa del N2 (0) al amonio (−3)", "No cambia el estado de oxidación"],0,"La desnitrificación baja de +5 a 0 y la fijación de 0 a −3."]
+,["T4","📈 Gráfica: En el diagrama del ciclo del nitrógeno por estados de oxidación, la desnitrificación:",["Baja del nitrato (+5) al N2 (0)", "Sube del amonio al nitrato", "Pasa del N2 al amonio", "Pasa del N orgánico al amonio"],0,"Se da sin oxígeno."]
+,["T4","📈 Gráfica: En la gráfica de las formas del fósforo en función del pH (agua destilada), a pH 5 predomina:",["H2PO4-", "HPO4 2-", "PO4 3-", "H3PO4"],0,"El HPO4 2- domina a pH más alto; ambas formas las consumen las plantas."]
+,["T4","📈 Gráfica: En el diagrama del ciclo del azufre por estados de oxidación, la sulfatorreducción:",["Baja del sulfato (+6) al H2S (−2)", "Sube del H2S al sulfato", "Pasa del azufre (0) al sulfato", "No cambia el estado de oxidación"],0,"Es una reducción no asimilativa (Desulfovibrio)."]
+,["T4","📈 Gráfica: En el esquema del papel del azufre en el clima, el aumento del DMS producido por el fitoplancton acaba provocando:",["Un descenso de la temperatura terrestre (retroalimentación negativa)", "Un aumento de la temperatura", "Lluvia ácida exclusivamente", "La desaparición de las nubes"],0,"DMS → sulfato → núcleos de condensación → más nubes → más albedo."]
+,["T5","📈 Gráfica: En la gráfica de sucesión con producción bruta (PB), respiración (R) y biomasa (B) frente al tiempo, al final del proceso:",["PB y R se igualan, la producción neta es casi cero y la biomasa se estabiliza en su máximo", "PB es mucho mayor que R", "La biomasa cae a cero", "R supera siempre a PB"],0,"Al principio PB > R y se acumula biomasa."]
+,["T5","📈 Gráfica: En la gráfica de sucesión, en la primera fase:",["La producción bruta supera a la respiración y se acumula biomasa", "La respiración supera a la producción", "La biomasa es máxima", "La producción neta es cero"],0,"Por eso los sistemas explotados se mantienen en etapas jóvenes."]
+,["T5","📈 Gráfica: En el esquema de sucesión del plancton (nutrientes frente a turbulencia), las diatomeas aparecen con:",["Mucha turbulencia y muchos nutrientes", "Poca turbulencia y pocos nutrientes", "Poca turbulencia y muchos nutrientes", "Mucha turbulencia y pocos nutrientes"],0,"Son estrategas r, propias del inicio de la sucesión."]
+,["T5","📈 Gráfica: En el esquema de sucesión del plancton, las mareas rojas aparecen con:",["Muchos nutrientes y poca turbulencia (agua estable)", "Mucha turbulencia y pocos nutrientes", "Mucha turbulencia y muchos nutrientes", "Poca turbulencia y ningún nutriente"],0,"Las producen dinoflagelados que proliferan en aguas estables y ricas."]
+,["T5","📈 Gráfica: En el esquema de sucesión del plancton, la zona con mucha turbulencia y pocos nutrientes corresponde a:",["Un «vacío», con muy poco fitoplancton", "Diatomeas", "Dinoflagelados", "Mareas rojas"],0,"Ni hay nutrientes ni estabilidad."]
+,["T5","📈 Gráfica: En la gráfica del experimento de Gause con dos especies de Paramecium, al cultivarlas juntas:",["Una sigue creciendo y la otra disminuye hasta desaparecer", "Las dos crecen igual", "Las dos desaparecen", "Ninguna cambia"],0,"Principio de exclusión competitiva."]
+,["T5","📈 Gráfica: En la representación del nicho como una curva en campana sobre un eje de recursos, una curva ancha y baja corresponde a:",["Una especie generalista", "Una especie especialista", "Una especie extinta", "Un nicho fundamental vacío"],0,"Especialista: curva estrecha y alta. Donde se solapan las curvas hay competencia."]
+,["T5","📈 Gráfica: En la representación de los nichos de dos especies, la zona donde se solapan sus curvas indica:",["Competencia por el mismo recurso", "Mutualismo", "Ausencia de interacción", "Que el nicho es fundamental"],0,"Cuanto mayor es el solapamiento, mayor es la competencia."]
+,["T5","📈 Gráfica: En el esquema de sucesión y regresión del bosque mediterráneo, el paso de monte a matorral o pastizal por fuego o sobrepastoreo es:",["Una regresión", "Una sucesión progresiva", "Una sucesión primaria", "Un clímax"],0,"La dehesa es un estado intermedio mantenido por el ser humano."]
+,["P3","📈 Gráfica: En la representación esquemática del impacto ambiental, los ejes son:",["Calidad ambiental (vertical) y tiempo (horizontal)", "Coste y beneficio", "Intensidad y extensión", "Superficie y profundidad"],0,"Se dibujan las curvas con proyecto y sin proyecto a partir del momento de la acción."]
+,["P3","📈 Gráfica: En la representación esquemática del impacto ambiental, el impacto en un momento dado es:",["La distancia vertical entre la curva con proyecto y la curva sin proyecto", "La distancia entre la curva con proyecto y el estado inicial", "El área bajo la curva sin proyecto", "El punto donde empieza la acción"],0,"Impacto = con proyecto − sin proyecto."]
+,["P3","📈 Gráfica: En una función de transformación, en el eje horizontal se representa ____ y en el vertical ____:",["El valor del indicador (magnitud física) y la calidad ambiental (de 0 a 1)", "El tiempo y la calidad ambiental", "El coste y el beneficio", "La intensidad y la extensión"],0,"Traduce un dato medido a calidad ambiental."]
+,["P4","📈 Gráfica: En la gráfica del oxígeno disuelto aguas abajo de un vertido orgánico:",["El oxígeno desciende tras el vertido y se recupera aguas abajo si la reposición supera al consumo", "El oxígeno aumenta tras el vertido", "El oxígeno no varía", "El oxígeno solo cambia aguas arriba"],0,"Si el consumo supera a la reposición aparecen condiciones de hipoxia."]
+,["P4","📈 Gráfica: En la pluma de un vertido de aguas residuales, ¿dónde será menor la concentración de contaminantes?",["En los bordes y en profundidad", "En el eje y en la superficie", "En el eje y en profundidad", "En los bordes y en superficie"],0,"La concentración es máxima en el eje de la pluma y cerca de la superficie (el agua residual, menos densa, asciende) y disminuye hacia los bordes y en profundidad."]
+,["P4","📈 Gráfica: En el esquema que compara contaminación puntual y difusa, la difusa se representa con:",["Muchas entradas distribuidas en el espacio, sin un foco concreto", "Una única tubería de vertido", "Un solo foco identificable", "Una chimenea industrial"],0,"Ejemplo: los fertilizantes de una comarca agrícola."]
+,["T3","La producción secundaria representa:",["La tasa de incorporación de nueva biomasa por parte de los organismos heterótrofos", "La biomasa vegetal disponible", "La respiración de los productores", "La energía solar captada"],0,"Es la producción de los consumidores."]
+,["T4","El proceso de eutrofización lo relacionamos con la entrada de:",["Fósforo en sistemas acuáticos", "Oxígeno en el agua", "CO2 en la atmósfera", "Metales pesados en el suelo"],0,"Junto al nitrógeno, el fósforo es el elemento clave."]
+,["P4","El proceso de fragmentación de un territorio produce, de forma general:",["Pérdida, reducción y aislamiento de hábitat", "Aumento de la conectividad", "Más superficie de hábitat continuo", "Ningún efecto sobre las poblaciones"],0,"Genera efecto barrera."]
+,["P4","La depresión endogámica, consecuencia de la fragmentación, está relacionada con la pérdida de:",["Conectividad entre poblaciones", "Nutrientes del suelo", "Polinización", "Nitrificación"],0,"Poblaciones aisladas se cruzan entre parientes y pierden diversidad genética."]
+,["P4","La concentración de contaminantes en una zona pesquera marina depende, fundamentalmente, de:",["La acción de las corrientes del medio receptor", "El color del agua", "La hora del día", "La salinidad exclusivamente"],0,"El transporte convectivo y la dispersión turbulenta reparten el contaminante."]
+,["T5","La distribución espacial solana-umbría en las dehesas favorece:",["La heterogeneidad espacial", "La homogeneidad espacial", "El flujo exclusivo de nutrientes", "Ninguna de las anteriores"],0,"La heterogeneidad es clave en los paisajes agrarios."]
+];
+</script>
+<script>
+// ===================== utilidades =====================
+const $ = s => document.querySelector(s);
+const app = $("#app");
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+const FIXED_END = /^(ninguna|ninguno|todas|todos)\b/i;
+const isTeo = t => t.startsWith("T");
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const fmt = (n, d=2) => n.toLocaleString("es-ES",{minimumFractionDigits:d, maximumFractionDigits:d});
+function ask(msg, yes, onYes){
+  const m=document.createElement("div"); m.className="modal"; m.setAttribute("role","dialog"); m.setAttribute("aria-modal","true");
+  m.innerHTML=`<div class="box"><p style="margin:0">${msg}</p><div class="row"><button class="btn ghost" data-a="no">Cancelar</button><button class="btn" data-a="yes">${yes}</button></div></div>`;
+  document.body.appendChild(m); m.querySelector('[data-a="yes"]').focus();
+  m.onclick=e=>{const a=e.target.dataset.a; if(a||e.target===m){m.remove(); if(a==="yes") onYes();}};
+}
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+// ===================== estado =====================
+let fails = store.get("ctma_fails", {});   // id -> veces fallada
+let seen  = store.get("ctma_seen", {});    // id -> veces vista
+let size  = store.get("ctma_size", 40);
+let run = null; // {mode, items, i, results, locked}
+
+// Construye una pregunta lista para mostrar, con opciones mezcladas
+function makeItem(id){
+  const [t, q, opts, c, e, fixed] = BANK[id];
+  let order = opts.map((_, k) => k);
+  if(!fixed){
+    const tail = order.filter(k => FIXED_END.test(opts[k]));
+    const body = shuffle(order.filter(k => !FIXED_END.test(opts[k])));
+    order = body.concat(tail);
+  }
+  return { id, t, q, e, opts: order.map(k => opts[k]), correct: order.indexOf(c) };
+}
+
+// ---- Prioridades ----
+// EXAM: preguntas que se repiten en exámenes reales de otros años.
+const EXAM_KEYS = ["se suele encontrar el CO2","producción primaria neta representa","ciencia de los ecosistemas","biología de los ecosistemas",
+ "química de los ecosistemas","producción regenerada","producción nueva","agricultura preindustrial","leguminosas","oligotrófico y el bosque tropical",
+ "S + NO3- → SO4 2- + N2","H2S + CO2 → S + CH2O","valor negativo","CO2 + 4H2","CH4 a partir de CO2","autosuficiente","más resistente a la descomposición",
+ "fermentación es un proceso","formación de la termoclina","no se suele formar termoclina","eficiencia de consumo","Sobreexplotación de los depredadores",
+ "Sobreexplotación pesquera","CH2O + SO4","de mayor a menor","de menor a mayor","mayor calentamiento","eliminar CO2","producción bruta la relacionas",
+ "eficiencia bruta de crecimiento","eficiencia de producción es","cociente define mejor","PPN / energía auxiliar","influye más en la descomposición",
+ "quimiolitoautótrofo","ciclos de nutrientes","ciclo del fósforo es","poiquilotermos","Un herbívoro ingiere 20","Un pastizal produce 24.000",
+ "Un bosque tiene 45","La PPN de un ecosistema es 750","elevada descomposición","lago eutrofizado","laguna eutrofizada","sistema agrícola son",
+ "se encuentra el O3","nitrificación es un proceso","desnitrificación se da","distribución y abundancia","INCORRECTA sobre la consideración termodinámica",
+ "heterótrofo (fotosíntesis","exosomática","ecosistema agrícola se diferencia","mayor precipitación y temperatura","sistemas antropogénicos",
+ "cambio climático afecta a la descomposición","más rápida la descomposición","comunidad de un río","acidificación oceánica","producción secundaria representa",
+ "eutrofización lo relacionamos","etapas maduras","sucesión del plancton","sucesión en sistemas acuáticos","unidades del índice de Shannon","nicho fundamental es",
+ "Elton","etapas iniciales","especialistas tienen","comunidad A tiene 3","solana-umbría","pluma de un vertido",
+ "NO está incluido en un Estudio","NO forma parte de un Estudio","Un impacto negativo:","instrumentos para la gestión ambiental","de carácter:",
+ "impacto ambiental se define","sobre el documento de alcance","Programa de Vigilancia","Red Natura 2000 son","Un impacto acumulativo","Un impacto latente",
+ "de signo","transporte de contaminantes","Selecciona la afirmación INCORRECTA","Subsistemas","presiones que originaron","metales pesados, pasado",
+ "NO está contemplado","Respecto a las alternativas","Fases metodológicas","entorno del proyecto","Criterios de las acciones","objeto principal del inventario",
+ "contaminantes biológicos","cautela","DIA)","IIA)","Una ley autonómica","identificar los impactos","Tipos de medidas","FALSA:","fragmentación de un territorio",
+ "depresión endogámica","zona pesquera"];
+// CLASE: lo que el profesor remarcó en clase y las preguntas tipo de sus diapositivas.
+const CLASS_KEYS = ["pH máximo","temperatura máxima","potencial redox mínimo","Nitrobacter","fijación biológica","eficiencia ecológica","tomate","Dos comunidades con 3 especies",
+ "Simpson","Tansley","biosfera»","sedimentos con sulfato","eutrofización es menos probable","lluvia ácida","se asocia principalmente","HANPP","1 g de carbono",
+ "límite superior de la producción","baja eficiencia de la fotosíntesis","pirámide de biomasa puede aparecer invertida","afloramiento","Hutchinson","exclusión competitiva",
+ "Calificación Ambiental","AAUS","(AAU) incluye","plazo para resolver una AAU","Licencia Ambiental, el órgano","subsanación","2001/42","RD 445/2023",
+ "hospital","0,60","0,40; sin proyecto","balsa","finalidad principal del inventario","buen indicador","lógica de las medidas","Objeto y descripción del proyecto",
+ "cementación","aperiódico","ejemplo de impacto sinérgico","humedal 12 años","1) Un impacto es recuperable","componentes de la representación esquemática",
+ "escenario con proyecto y el escenario sin","recurso de flujo","vegetación de ribera","Dispersar","1) La energía solar","1) La emisión de gases",
+ "cuatro tipos de servicios","10 ha","tres grandes vías","representación esquemática del impacto ambiental, el impacto"];
+const has = (id, keys) => keys.some(k => BANK[id][1].toLowerCase().includes(k.toLowerCase()));
+const isGraf = id => BANK[id][1].startsWith("📈");
+const isExam = id => has(id, EXAM_KEYS);
+const isClass = id => !isExam(id) && has(id, CLASS_KEYS);
+const tagOf = id => isExam(id) ? "exam" : isClass(id) ? "class" : "";
+
+// Elige n preguntas de un grupo, priorizando las menos vistas para variar
+function pick(ids, n){
+  return shuffle(ids.slice())
+    .sort((a, b) => (seen[a] || 0) - (seen[b] || 0) + (Math.random() - 0.5) * 1.2)
+    .slice(0, Math.max(0, n));
+}
+
+// Cada simulacro es distinto: ~55 % preguntas de exámenes reales, ~30 % remarcadas en clase y ~15 % del resto (pocas gráficas)
+function buildPart(ids, n){
+  const exam = ids.filter(isExam), cls = ids.filter(isClass);
+  const rest = ids.filter(i => !isExam(i) && !isClass(i));
+  const nE = Math.round(n * 0.55), nC = Math.round(n * 0.30);
+  let out = pick(exam, nE).concat(pick(cls, nC));
+  const restNoGraf = rest.filter(i => !isGraf(i)), graf = rest.filter(isGraf);
+  const nG = Math.min(graf.length, Math.random() < 0.5 ? 1 : 2);
+  out = out.concat(pick(graf, Math.min(nG, n - out.length)));
+  out = out.concat(pick(restNoGraf, n - out.length));
+  if(out.length < n) out = out.concat(pick(ids.filter(i => !out.includes(i)), n - out.length));
+  return shuffle(out);
+}
+function buildSimulacro(n){
+  const all = BANK.map((_, i) => i);
+  if(n >= all.length) return shuffle(all);
+  const teo = all.filter(i => isTeo(BANK[i][0])), pra = all.filter(i => !isTeo(BANK[i][0]));
+  const nTeo = Math.round(n * 25 / 40);
+  return buildPart(teo, nTeo).concat(buildPart(pra, n - nTeo));
+}
+
+// ===================== pantallas =====================
+function home(){
+  run = null;
+  const nFails = Object.keys(fails).filter(id => BANK[id]).length;
+  const nTeo = BANK.filter(q => isTeo(q[0])).length;
+  const grafIds = BANK.map((q, i) => i).filter(i => BANK[i][1].startsWith("📈"));
+  const nGraf = grafIds.length;
+  const sizes = [20, 40, 60, BANK.length];
+  app.innerHTML = `
+  <section class="hero">
+    <h1>Entrena el primer parcial de Medio Ambiente</h1>
+    <p>Simulacros tipo test con ${BANK.length} preguntas de exámenes reales y de clase: ${nTeo} de teoría (temas 1 a 5) y ${BANK.length - nTeo} de prácticas. Cada simulacro mezcla preguntas distintas y da prioridad a las que has visto menos.</p>
+  </section>
+  <div class="modes">
+    <section class="mode" aria-labelledby="m1">
+      <h2 id="m1">Simulacro de examen</h2>
+      <p class="muted">Cada simulacro es distinto: unas 25 de teoría por cada 15 de prácticas, mezclando sobre todo preguntas que han caído en exámenes reales con las que el profesor ha remarcado en clase.</p>
+      <div class="choices" role="group" aria-label="Número de preguntas">
+        ${sizes.map(s => `<button class="choice" data-size="${s}" aria-pressed="${s===size}">${s===BANK.length ? "Todas ("+s+")" : s + " preguntas"}</button>`).join("")}
+      </div>
+      <div class="row">
+        <button class="btn" id="startSim">Empezar simulacro</button>
+        <button class="linkbtn" id="rules2">Ver cómo se evalúa</button>
+      </div>
+    </section>
+    <section class="mode" aria-labelledby="m3">
+      <h2 id="m3">Practicar gráficas</h2>
+      <p class="muted">${nGraf} preguntas sobre las gráficas y esquemas de las diapositivas (perfiles, curvas, diagramas). Se ordenan al azar.</p>
+      <div class="row"><button class="btn ghost" id="startGraf">Practicar ${nGraf} gráficas</button></div>
+    </section>
+    <section class="mode" aria-labelledby="m2">
+      <h2 id="m2">Repasar falladas</h2>
+      <p class="muted">${nFails ? `Tienes ${nFails} pregunta${nFails>1?"s":""} pendiente${nFails>1?"s":""}. Cada una que aciertes aquí sale de la lista.` : "Aún no tienes preguntas falladas. Haz un simulacro y aquí aparecerán las que falles o dejes en blanco."}</p>
+      <div class="row">
+        <button class="btn ghost" id="startRev" ${nFails ? "" : "disabled"}>Repasar ${nFails || ""} falladas</button>
+        ${nFails ? `<button class="linkbtn" id="clearFails">Vaciar lista</button>` : ""}
+      </div>
+    </section>
+  </div>`;
+  app.querySelectorAll(".choice").forEach(b => b.onclick = () => {
+    size = +b.dataset.size; store.set("ctma_size", size);
+    app.querySelectorAll(".choice").forEach(x => x.setAttribute("aria-pressed", x === b));
+  });
+  $("#startSim").onclick = () => start("sim", buildSimulacro(size));
+  $("#startGraf").onclick = () => start("graf", shuffle(grafIds.slice()));
+  $("#rules2").onclick = rules;
+  if(nFails){
+    $("#startRev").onclick = () => start("rev", shuffle(Object.keys(fails).map(Number).filter(id => BANK[id])));
+    $("#clearFails").onclick = () => { ask("¿Vaciar la lista de preguntas falladas?","Vaciar lista",()=>{ fails = {}; store.set("ctma_fails", fails); home(); }); };
+  }
+  window.scrollTo(0,0);
+}
+
+function rules(){
+  run = null;
+  app.innerHTML = `
+  <h2 style="margin-top:14px">Cómo se evalúa el simulacro</h2>
+  <div class="rules">
+    <ul>
+      <li>Cada pregunta tiene <b>4 opciones y una sola correcta</b>.</li>
+      <li>Al contestar, tu opción se marca en <b style="color:var(--bad)">rojo</b> si es incorrecta y la correcta se ilumina en <b style="color:var(--ok)">verde</b>. Al segundo pasa sola a la siguiente.</li>
+      <li>Puedes <b>dejar una pregunta en blanco</b>: no suma ni resta y no te enseña la respuesta, así que puedes volver a ella y contestarla después.</li>
+      <li>Con <b>← Anterior</b> (o tocando las casillas de arriba) vuelves a cualquier pregunta: si ya la contestaste, ves la correcta y la explicación; si la dejaste en blanco, todavía puedes responderla.</li>
+      <li><b>Cada 2 fallos restan 1 acierto</b> (cada fallo resta 0,5).</li>
+    </ul>
+    <div class="formula">Nota = (aciertos − fallos ÷ 2) ÷ total × 10</div>
+    <ul>
+      <li>La nota nunca baja de 0. El porcentaje es la nota multiplicada por 10.</li>
+      <li>Ejemplo: 40 preguntas, 30 aciertos, 6 fallos y 4 en blanco → (30 − 3) ÷ 40 × 10 = <b>6,75</b> (67,5 %).</li>
+      <li>Al terminar verás tu nota, tu resultado por tema y qué temas debes practicar más.</li>
+      <li>Las preguntas falladas o en blanco se guardan en este navegador para el modo <b>Repasar falladas</b>.</li>
+      <li>Atajos de teclado: <b>A, B, C, D</b> (o 1-4) para contestar, <b>espacio</b> para dejar en blanco y las <b>flechas ← →</b> para moverte.</li>
+    </ul>
+  </div>
+  <p style="margin-top:18px"><button class="btn" id="back">Volver al inicio</button></p>`;
+  $("#back").onclick = home;
+  window.scrollTo(0,0);
+}
+
+function start(mode, ids){
+  run = { mode, items: ids.map(makeItem), i: 0, results: [], locked: false };
+  showQuestion();
+}
+
+function firstOpen(){ const k = run.items.findIndex((_, i) => !run.results[i]); return k < 0 ? run.items.length : k; }
+
+function stripHTML(){
+  const fo = firstOpen();
+  return `<div class="strip" role="group" aria-label="Ir a una pregunta">${run.items.map((_, k) => {
+    const r = run.results[k];
+    const cls = (r ? r.status : "") + (k === run.i ? " now" : "");
+    const can = r || k === fo;
+    return `<button class="cell ${cls}" data-go="${k}" ${can ? "" : "disabled"} aria-label="Pregunta ${k + 1}"></button>`;
+  }).join("")}</div>`;
+}
+
+function go(k){
+  if(!run) return;
+  clearTimeout(run.timer);
+  if(k < 0) return;
+  if(k >= run.items.length){ finish(); return; }
+  run.i = k; showQuestion();
+}
+
+function showQuestion(){
+  const it = run.items[run.i];
+  const r = run.results[run.i];
+  const answered = r && r.status !== "blank";
+  run.locked = !!answered;
+  const last = run.i === run.items.length - 1;
+  const fo = firstOpen();
+  const nextLabel = (last && fo >= run.items.length) ? "Ver nota" : "Siguiente →";
+  app.innerHTML = `
+  <div class="qhead"><span>${run.mode === "rev" ? "Repaso de falladas" : run.mode === "graf" ? "Gráficas" : "Simulacro"} · Pregunta ${run.i + 1} de ${run.items.length}</span><span>${esc(TEMAS[it.t])}</span></div>
+  ${stripHTML()}
+  ${r ? `<p class="tag ${r.status}">${r.status === "ok" ? "La acertaste" : r.status === "bad" ? "La fallaste" : "La dejaste en blanco: aún puedes contestarla"}</p>` : ""}
+  <p class="qtext" id="qtext">${esc(it.q)}</p>
+  <div class="opts" role="group" aria-labelledby="qtext">
+    ${it.opts.map((o, k) => `<button class="opt${answered && k === it.correct ? " correct" : ""}${answered && k === r.chosen && r.status === "bad" ? " wrong" : ""}" data-k="${k}" ${answered ? "disabled" : ""}><span class="k">${"ABCD"[k]}</span><span>${esc(o)}</span></button>`).join("")}
+  </div>
+  ${answered ? `<p class="expl"><b>Por qué:</b> ${esc(it.e)}</p>` : ""}
+  <div class="qfoot">
+    <div class="row">
+      <button class="btn ghost" id="prevBtn" ${run.i === 0 ? "disabled" : ""}>← Anterior</button>
+      ${r ? `<button class="btn ghost" id="nextBtn">${nextLabel}</button>` : `<button class="btn ghost" id="blankBtn">Dejar en blanco</button>`}
+    </div>
+    <button class="linkbtn" id="quit">Terminar y ver nota</button>
+  </div>`;
+  if(!answered) app.querySelectorAll(".opt").forEach(b => b.onclick = () => answer(+b.dataset.k));
+  app.querySelectorAll("[data-go]").forEach(b => b.onclick = () => go(+b.dataset.go));
+  $("#prevBtn").onclick = () => go(run.i - 1);
+  if($("#nextBtn")) $("#nextBtn").onclick = next;
+  if($("#blankBtn")) $("#blankBtn").onclick = () => answer(null);
+  $("#quit").onclick = () => { ask("¿Terminar ahora? Las preguntas que queden se cuentan en blanco.","Terminar y ver nota",()=>{ if(run) finish(); }); };
+  window.scrollTo(0,0);
+}
+
+function next(){
+  if(!run) return;
+  if(run.i + 1 < run.items.length) go(run.i + 1);
+  else { const fo = firstOpen(); fo >= run.items.length ? finish() : go(fo); }
+}
+
+function answer(k){
+  if(!run || run.locked) return;
+  const it = run.items[run.i];
+  const prev = run.results[run.i];
+  if(k === null && prev) { next(); return; }       // ya estaba en blanco: solo avanzar
+  run.locked = true;
+  const btns = app.querySelectorAll(".opt");
+  btns.forEach(b => b.disabled = true);
+  if($("#blankBtn")) $("#blankBtn").disabled = true;
+  let status = "blank";
+  if(k !== null){
+    status = k === it.correct ? "ok" : "bad";
+    btns[it.correct].classList.add("correct");
+    if(status === "bad") btns[k].classList.add("wrong");
+  }
+  run.results[run.i] = { status, chosen: k };
+  if(!prev) seen[it.id] = (seen[it.id] || 0) + 1;
+  if(status === "ok"){
+    if(run.mode === "rev") delete fails[it.id];
+    else if(prev && fails[it.id]){ fails[it.id]--; if(!fails[it.id]) delete fails[it.id]; } // antes contaba como en blanco
+  } else if(!prev){
+    fails[it.id] = (fails[it.id] || 0) + 1;
+  }
+  store.set("ctma_seen", seen); store.set("ctma_fails", fails);
+  const cells = app.querySelectorAll(".cell");
+  if(cells[run.i]) cells[run.i].className = "cell " + status + " now";
+  const at = run.i;
+  run.timer = setTimeout(() => { if(run && run.i === at) next(); }, status === "blank" ? 300 : 1000);
+}
+
+function finish(){
+  const items = run.items, res = run.items.map((_, k) => run.results[k] || { status: "blank", chosen: null });
+  const n = items.length;
+  const ok = res.filter(r => r.status === "ok").length;
+  const bad = res.filter(r => r.status === "bad").length;
+  const blank = n - ok - bad;
+  const nota = Math.max(0, (ok - bad / 2) / n * 10);
+  // por tema
+  const by = {};
+  items.forEach((it, k) => {
+    const g = by[it.t] || (by[it.t] = { ok: 0, bad: 0, blank: 0, n: 0 });
+    g.n++; g[res[k].status]++;
+  });
+  const temas = Object.keys(by).map(t => {
+    const g = by[t]; const net = Math.max(0, (g.ok - g.bad / 2) / g.n);
+    return { t, ...g, net };
+  }).sort((a, b) => a.net - b.net);
+  const weak = temas.filter(x => x.net < 0.7);
+  const missed = items.map((it, k) => ({ it, r: res[k] })).filter(x => x.r.status !== "ok");
+  const verdict = nota >= 9 ? "Sobresaliente" : nota >= 7 ? "Notable" : nota >= 5 ? "Aprobado" : "Suspenso";
+  const mode = run.mode;
+  run = null;
+  app.innerHTML = `
+  <h2 style="margin-top:14px">${mode === "rev" ? "Resultado del repaso" : mode === "graf" ? "Resultado de gráficas" : "Resultado del simulacro"}</h2>
+  <div class="grade">
+    <span class="big">${fmt(nota)}</span>
+    <span class="pct">${fmt(nota * 10, 1)} %</span>
+    <span class="pct" style="font-size:1.3rem">${verdict}</span>
+  </div>
+  <div class="counts">
+    <span class="c-ok"><b>${ok}</b> aciertos</span>
+    <span class="c-bad"><b>${bad}</b> fallos</span>
+    <span class="muted"><b>${blank}</b> en blanco</span>
+    <span class="muted">de ${n} preguntas</span>
+  </div>
+  <p class="muted">Nota = (${ok} − ${bad} ÷ 2) ÷ ${n} × 10. Cada 2 fallos restan 1 acierto.</p>
+
+  <h3>Qué debes practicar más</h3>
+  ${weak.length
+    ? `<p>Tu punto débil ${weak.length > 1 ? "son estos temas" : "es este tema"}, ordenado${weak.length > 1 ? "s" : ""} de peor a mejor: <b>${weak.map(w => esc(TEMAS[w.t])).join("</b>; <b>")}</b>. Repasa sus apuntes y luego usa “Repasar falladas”.</p>`
+    : `<p>Has superado el 70 % neto en todos los temas. Sigue haciendo simulacros para mantenerlo.</p>`}
+  <ul class="temas">
+    ${temas.map(x => {
+      const p = Math.round(x.net * 100);
+      return `<li><b>${esc(TEMAS[x.t])}</b><br><span class="muted">${x.ok} bien · ${x.bad} mal · ${x.blank} en blanco · ${p} % neto</span>
+      <div class="bar"><i class="${p < 50 ? "low" : p < 70 ? "mid" : ""}" style="width:${p}%"></i></div></li>`;
+    }).join("")}
+  </ul>
+
+  <div class="row" style="margin:20px 0">
+    <button class="btn" id="again">Nuevo simulacro</button>
+    <button class="btn ghost" id="rev" ${Object.keys(fails).length ? "" : "disabled"}>Repasar falladas</button>
+    <button class="linkbtn" id="home2">Volver al inicio</button>
+  </div>
+
+  ${missed.length ? `<h3>Preguntas que has fallado o dejado en blanco</h3>
+  <ul class="review">
+    ${missed.map(({ it, r }) => `<li class="${r.status}">
+      <span class="muted">${esc(TEMAS[it.t])} · ${r.status === "bad" ? "Fallada" : "En blanco"}</span>
+      <p style="margin:.25em 0"><b>${esc(it.q)}</b></p>
+      ${r.status === "bad" ? `<p style="margin:0;color:var(--bad)">Tu respuesta: ${esc(it.opts[r.chosen])}</p>` : ""}
+      <p class="ans" style="margin:0">Correcta: ${esc(it.opts[it.correct])}</p>
+      <p class="exp">${esc(it.e)}</p></li>`).join("")}
+  </ul>` : `<p>No has fallado ninguna. ¡Perfecto!</p>`}`;
+  $("#again").onclick = () => start("sim", buildSimulacro(size));
+  $("#home2").onclick = home;
+  const rv = $("#rev"); if(!rv.disabled) rv.onclick = () => start("rev", shuffle(Object.keys(fails).map(Number).filter(id => BANK[id])));
+  window.scrollTo(0,0);
+}
+
+// ===================== teclado y navegación =====================
+document.addEventListener("keydown", e => {
+  if(!run || document.querySelector(".modal")) return;
+  if(e.key === "ArrowLeft"){ e.preventDefault(); go(run.i - 1); return; }
+  if(e.key === "ArrowRight" && run.results[run.i]){ e.preventDefault(); next(); return; }
+  if(run.locked) return;
+  const map = { a:0, b:1, c:2, d:3, "1":0, "2":1, "3":2, "4":3 };
+  const k = map[e.key.toLowerCase()];
+  if(k !== undefined){ e.preventDefault(); answer(k); }
+  else if(e.key === " "){ e.preventDefault(); answer(null); }
+});
+$("#goHome").onclick = () => { if(!run) home(); else ask("¿Salir del simulacro? Perderás el progreso de este intento.","Salir",home); };
+$("#goRules").onclick = () => { if(!run) rules(); else ask("¿Salir del simulacro para ver las instrucciones? Perderás el progreso.","Salir",rules); };
+home();
+</script>
+</body>
+</html>
